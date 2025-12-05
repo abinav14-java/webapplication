@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title>Dashboard - InstaClone</title>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      background-color: #fafafa;
+    }
+
+    /* Layout */
+    .app-container { max-width:1100px; margin:20px auto; display:flex; gap:20px; padding:0 16px }
+    .left-col { width:220px; }
+    .center-col { flex:1; max-width:640px; }
+    .right-col { width:220px; }
+
+    /* Navbar */
+    .navbar { display:flex; align-items:center; gap:12px; padding:14px 0 6px 0 }
+    .brand { font-size:28px; font-weight:700; background:linear-gradient(45deg,#f09433,#bc1888); -webkit-background-clip:text; -webkit-text-fill-color:transparent }
+    .search { flex:1 }
+    .search input { width:100%; padding:8px 12px; border-radius:18px; border:1px solid #e6e6e6; }
+
+    /* Feed */
+    .center-col .feed { display:block }
+
+    .create-post { background:#fff; border:1px solid #eaeaea; padding:12px; border-radius:10px; margin-bottom:16px }
+    .create-post textarea { width:100%; min-height:60px; border:1px solid #eef0f2; border-radius:8px; padding:8px }
+    .create-post input[type="text"] { width:100%; padding:8px; border-radius:8px; border:1px solid #eef0f2 }
+    .create-post .actions { display:flex; justify-content:flex-end; gap:8px; margin-top:8px }
+
+    .post { background:#fff; border:1px solid #eee; border-radius:10px; margin-bottom:18px; overflow:hidden }
+
+    .profile-pic {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin-right: 12px;
+      flex-shrink: 0;
+      border: 2px solid #e1e1e1;
+    }
+
+    .profile-pic img {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    .post-header > div {
+      flex: 1;
+    }
+
+    .username {
+      font-weight: 600;
+      color: #262626;
+      font-size: 14px;
+    }
+
+    .post-time {
+      font-size: 12px;
+      color: #999;
+      margin-top: 2px;
+    }
+
+    .post-image {
+      width: 100%;
+      background: #f0f0f0;
+      max-height: 600px;
+      overflow: hidden;
+    }
+
+    .post-image img {
+      width: 100%;
+      display: block;
+    }
+
+    .post-actions {
+      display: flex;
+      gap: 10px;
+      padding: 12px 16px;
+      border-bottom: 1px solid #e1e1e1;
+    }
+
+    .action-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 18px;
+      padding: 4px 8px;
+      border-radius: 4px;
+      transition: background 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      color: #262626;
+    }
+
+    .action-btn:hover {
+      background: #f0f0f0;
+    }
+
+    .action-btn.liked {
+      color: #e74c3c;
+    }
+
+    .like-count, .comment-count {
+      font-size: 14px;
+      color: #262626;
+    }
+
+    .post-caption {
+      padding: 0 16px 12px;
+      font-size: 14px;
+      line-height: 1.4;
+    }
+
+    .post-caption .username {
+      margin-right: 4px;
+    }
+
+    .comments-section {
+      padding: 12px 16px;
+      border-top: 1px solid #e1e1e1;
+      background: #f9f9f9;
+    }
+
+    .comments-list {
+      max-height: 300px;
+      overflow-y: auto;
+      margin-bottom: 12px;
+    }
+
+    .comment {
+      display: flex;
+      gap: 8px;
+      padding: 8px 0;
+      font-size: 13px;
+      border-bottom: 1px solid #e1e1e1;
+      align-items: flex-start;
+    }
+
+    .comment:last-child {
+      border-bottom: none;
+    }
+
+    .comment .username {
+      font-size: 13px;
+      margin-right: 4px;
+    }
+
+    .comment-text {
+      flex: 1;
+      color: #262626;
+      word-wrap: break-word;
+    }
+
+    .delete-btn {
+      background: none;
+      border: none;
+      color: #e74c3c;
+      cursor: pointer;
+      font-size: 12px;
+      padding: 0;
+      opacity: 0.7;
+      transition: opacity 0.2s;
+    }
+
+    .delete-btn:hover {
+      opacity: 1;
+    }
+
+    .add-comment {
+      display: flex;
+      gap: 8px;
+    }
+
+    .add-comment input {
+      flex: 1;
+      border: 1px solid #e1e1e1;
+      border-radius: 18px;
+      padding: 8px 16px;
+      font-size: 13px;
+      outline: none;
+      background: #fff;
+    }
+
+    .add-comment input:focus {
+      border-color: #3897f0;
+    }
+
+    .add-comment button {
+      background: #3897f0;
+      border: none;
+      color: #fff;
+      padding: 8px 16px;
+      border-radius: 18px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+      transition: background 0.2s;
+    }
+
+    .add-comment button:hover {
+      background: #317ec7;
+    }
+    /* Heart animation */
+    .heart {
+      display:inline-block;
+      transition: transform 160ms ease, opacity 160ms ease;
+      will-change: transform, opacity;
+    }
+    .action-btn.liked .heart {
+      transform: scale(1.25);
+      color: #e74c3c;
+    }
+    .heart.pop {
+      animation: pop 320ms ease forwards;
+    }
+    @keyframes pop {
+      0% { transform: scale(0.8); opacity: 0.8 }
+      50% { transform: scale(1.5); opacity: 1 }
+      100% { transform: scale(1.1); opacity: 1 }
+    }
+
+    /* Likers modal */
+    .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display:none; align-items:center; justify-content:center; z-index:10000 }
+    .modal { background:#fff; width:320px; border-radius:8px; padding:12px; box-shadow:0 6px 22px rgba(0,0,0,0.2) }
+    .modal h3{ margin:0 0 8px 0; font-size:16px }
+    .modal .liker { padding:8px 6px; border-bottom:1px solid #f0f0f0 }
+    .modal .close { float:right; cursor:pointer; font-weight:700 }
+  </style>
+</head>
+<body>
+  <!-- Navbar -->
+  <div class="navbar">
+    <div class="brand">InstaClone</div>
+    <div class="search"><input id="global-search" placeholder="Search users or posts..."></div>
+    <div><button onclick="logout()">Logout</button></div>
+  </div>
+
+  <div class="app-container">
+    <div class="left-col">
+      <div style="background:#fff;border:1px solid #eee;padding:12px;border-radius:10px;text-align:center">
+        <img src="https://i.pravatar.cc/80?u=me" style="border-radius:50%;width:80px;height:80px;" />
+        <div style="margin-top:8px;font-weight:700">You</div>
+        <div style="color:#777;font-size:13px">@yourhandle</div>
+      </div>
+    </div>
+
+    <div class="center-col">
+      <div class="create-post">
+        <input id="post-image" type="text" placeholder="Image URL (optional)" />
+        <textarea id="post-caption" placeholder="Write a caption..."></textarea>
+        <div class="actions">
+          <button onclick="createPost()" style="background:#3897f0;border:none;color:#fff;padding:8px 12px;border-radius:8px">Post</button>
+        </div>
+      </div>
+
+      <!-- Stories (Instagram-like) -->
+      <div class="stories" style="display:flex;gap:12px;overflow-x:auto;padding:10px 6px;margin-bottom:12px;background:#fff;border:1px solid #eee;border-radius:10px">
+        <div class="story" style="text-align:center;min-width:72px">
+          <div style="width:64px;height:64px;border-radius:50%;overflow:hidden;border:2px solid #ffbf00;margin:0 auto"><img src="https://i.pravatar.cc/64?u=1" style="width:100%"/></div>
+          <div style="font-size:12px;margin-top:6px">alice</div>
+        </div>
+        <div class="story" style="text-align:center;min-width:72px">
+          <div style="width:64px;height:64px;border-radius:50%;overflow:hidden;border:2px solid #ffbf00;margin:0 auto"><img src="https://i.pravatar.cc/64?u=2" style="width:100%"/></div>
+          <div style="font-size:12px;margin-top:6px">bob</div>
+        </div>
+        <div class="story" style="text-align:center;min-width:72px">
+          <div style="width:64px;height:64px;border-radius:50%;overflow:hidden;border:2px solid #ffbf00;margin:0 auto"><img src="https://i.pravatar.cc/64?u=3" style="width:100%"/></div>
+          <div style="font-size:12px;margin-top:6px">carol</div>
+        </div>
+      </div>
+
+      <!-- Feed -->
+      <div class="feed" id="feed">
+        <!-- Posts will be loaded here -->
+      </div>
+    </div>
+
+    <div class="right-col">
+      <div style="background:#fff;border:1px solid #eee;padding:12px;border-radius:10px">
+        <div style="font-weight:700;margin-bottom:8px">Suggested</div>
+        <div style="color:#777;font-size:13px">Follow some users to see posts here</div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/dashboard.js"></script>
+  <!-- Likers modal -->
+  <div id="likers-backdrop" class="modal-backdrop">
+    <div class="modal" id="likers-modal">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <h3>Likes</h3>
+        <div class="close" onclick="hideLikersModal()">✕</div>
+      </div>
+      <div id="likers-list"></div>
+    </div>
+  </div>
+  <!-- Debug banner -->
+  <div id="debug-banner" style="position:fixed;bottom:12px;right:12px;background:#fff;padding:8px 12px;border:1px solid #ddd;border-radius:8px;box-shadow:0 2px 6px rgba(0,0,0,0.08);font-size:12px;z-index:9999;color:#222">Loading...</div>
+</body>
+</html>
+

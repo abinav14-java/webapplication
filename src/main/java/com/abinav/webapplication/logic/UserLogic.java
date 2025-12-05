@@ -9,13 +9,13 @@ import com.abinav.webapplication.model.Users;
 import com.abinav.webapplication.service.UserService;
 
 @Component
-public class UserLogic  implements UserDetailsService{
+public class UserLogic implements UserDetailsService {
+
 	@Autowired
 	private UserService userService;
 
 	public Users createUser(Users user) throws Exception {
 		return userService.createUser(user);
-
 	}
 
 	public boolean existsByEmail(String email) throws Exception {
@@ -26,8 +26,20 @@ public class UserLogic  implements UserDetailsService{
 		try {
 			return userService.loadUserByUsername(email);
 		} catch (Exception e) {
-			return null;		}
-		
+			return null;
+		}
+	}
+
+	public java.util.Optional<Users> findByEmail(String email) throws Exception {
+		return userService.findByEmail(email);
+	}
+
+	public Users updateUser(Users user) throws Exception {
+		return userService.updateUser(user);
+	}
+
+	public java.util.List<Users> searchUsers(String query) throws Exception {
+		return userService.searchUsers(query);
 	}
 
 }
