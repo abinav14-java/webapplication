@@ -12,4 +12,7 @@ public interface UserRepository extends JpaRepository<Users, Long> {
 
 	Optional<Users> findByEmail(String email) throws Exception;
 
+	// Search users by username or email (case-insensitive, partial match)
+	java.util.List<Users> findByUsernameContainingIgnoreCaseOrEmailContainingIgnoreCase(String username, String email) throws Exception;
+
 }

@@ -12,4 +12,12 @@ public interface UserService {
 
 	UserDetails loadUserByUsername(String email) throws Exception;
 
+	java.util.Optional<Users> findByEmail(String email) throws Exception;
+
+	java.util.Optional<Users> findById(Long id);
+
+	Users updateUser(Users user) throws Exception;
+
+	java.util.List<Users> searchUsers(String query) throws Exception;
+
 }
