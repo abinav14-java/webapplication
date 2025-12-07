@@ -16,6 +16,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+
 @RestController
 @RequestMapping("/api/users")
 public class FollowController {
@@ -26,34 +30,51 @@ public class FollowController {
     @Autowired
     private UserServiceImpl userService;
 
+    private static final Logger logger = LoggerFactory.getLogger(FollowController.class);
+
     /**
      * Follow a user
      * POST /api/users/{userId}/follow
      */
     @PostMapping("/{userId}/follow")
-    public ResponseEntity<?> followUser(@PathVariable Long userId, Authentication auth) {
-        try {
-            String email = auth.getName();
-            Users currentUser = userService.findByEmail(email).orElse(null);
-            if (currentUser == null) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not found");
-            }
+public ResponseEntity<?> followUser(@PathVariable Long userId, Authentication auth) {
+    try {
+        // 1. Check if user is authenticated
 
-            if (currentUser.getId().equals(userId)) {
-                return ResponseEntity.badRequest().body("Cannot follow yourself");
-            }
-
-            Follow follow = followService.followUser(currentUser.getId(), userId);
-            Map<String, Object> response = new HashMap<>();
-            response.put("message", "User followed successfully");
-            // return sanitized follower and following
-            response.put("follower", UserMapper.toDTO(follow.getFollower()));
-            response.put("following", UserMapper.toDTO(follow.getFollowing()));
-            return ResponseEntity.status(HttpStatus.CREATED).body(response);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error: " + e.getMessage());
+        if (auth == null || !auth.isAuthenticated()
+                || "anonymousUser".equals(auth.getPrincipal())) {
+            logger.warn("Unauthenticated follow attempt to userId: {}", userId);
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body("You must be logged in to follow a user");
         }
+
+        String email = auth.getName(); // this is safe now
+        Users currentUser = userService.findByEmail(email).orElse(null);
+
+        if (currentUser == null) {
+            logger.warn("Authenticated user not found in database: {}", email);
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not found");
+        }
+
+        if (currentUser.getId().equals(userId)) {
+            logger.warn("User {} is trying to follow themselves", email);
+            return ResponseEntity.badRequest().body("Cannot follow yourself");
+        }
+
+        Follow follow = followService.followUser(currentUser.getId(), userId);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("message", "User followed successfully");
+        response.put("follower", UserMapper.toDTO(follow.getFollower()));
+        response.put("following", UserMapper.toDTO(follow.getFollowing()));
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    } catch (Exception e) {
+        logger.error("Error while following user: ", e);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error: " + e.getMessage());
     }
+}
+
 
     /**
      * Unfollow a user
@@ -65,6 +86,7 @@ public class FollowController {
             String email = auth.getName();
             Users currentUser = userService.findByEmail(email).orElse(null);
             if (currentUser == null) {
+                logger.warn("Authenticated user not found in database: {}", email);
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not found");
             }
 
@@ -73,6 +95,7 @@ public class FollowController {
             response.put("message", "User unfollowed successfully");
             return ResponseEntity.ok(response);
         } catch (Exception e) {
+            logger.error("Error while unfollowing user: ", e);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error: " + e.getMessage());
         }
     }
@@ -90,6 +113,7 @@ public class FollowController {
             response.put("followers", UserMapper.followersToDTOs(followers));
             return ResponseEntity.ok(response);
         } catch (Exception e) {
+            logger.error("Error while getting followers: ", e);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error: " + e.getMessage());
         }
     }
@@ -107,6 +131,7 @@ public class FollowController {
             response.put("following", UserMapper.followingToDTOs(following));
             return ResponseEntity.ok(response);
         } catch (Exception e) {
+            logger.error("Error while getting following: ", e);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error: " + e.getMessage());
         }
     }
@@ -123,6 +148,7 @@ public class FollowController {
             response.put("count", count);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
+            logger.error("Error while getting followers count: ", e);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error: " + e.getMessage());
         }
     }
@@ -139,6 +165,7 @@ public class FollowController {
             response.put("count", count);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
+            logger.error("Error while getting following count: ", e);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error: " + e.getMessage());
         }
     }
@@ -161,6 +188,7 @@ public class FollowController {
             response.put("following", isFollowing);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
+            logger.error("Error while checking following status: ", e);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error: " + e.getMessage());
         }
     }
@@ -174,6 +202,7 @@ public class FollowController {
         try {
             Users user = userService.findById(userId).orElse(null);
             if (user == null) {
+                logger.warn("User profile not found for userId: {}", userId);
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
             }
 
@@ -187,6 +216,7 @@ public class FollowController {
 
             return ResponseEntity.ok(profile);
         } catch (Exception e) {
+            logger.error("Error while getting user profile: ", e);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error: " + e.getMessage());
         }
     }
