@@ -1,5 +1,7 @@
 package com.abinav.webapplication.controller;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -9,7 +11,6 @@ import org.springframework.web.bind.annotation.*;
 import com.abinav.webapplication.model.Comment;
 import com.abinav.webapplication.model.Like;
 import com.abinav.webapplication.model.Users;
-import com.abinav.webapplication.dto.UserDTO;
 import com.abinav.webapplication.utility.UserMapper;
 import com.abinav.webapplication.serviceImpl.CommentServiceImpl;
 import com.abinav.webapplication.serviceImpl.LikeServiceImpl;
@@ -31,6 +32,8 @@ public class LikeCommentController {
 
     @Autowired
     private UserServiceImpl userService;
+
+    private static final Logger logger = LoggerFactory.getLogger(LikeCommentController.class);
 
     // ========== LIKES ==========
 

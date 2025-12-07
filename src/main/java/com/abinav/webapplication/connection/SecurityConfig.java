@@ -4,6 +4,7 @@ import com.abinav.webapplication.logic.UserLogic;
 import com.abinav.webapplication.utility.JwtFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -23,6 +24,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
     private final JwtFilter jwtFilter;
+    @SuppressWarnings("unused")
     private final UserLogic userLogic;
 
     public SecurityConfig(JwtFilter jwtFilter, UserLogic userLogic) {
@@ -35,30 +37,51 @@ public class SecurityConfig {
         return jwtFilter;
     }
 
-    @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http.csrf().disable()
-            .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/auth/**", "/api/users/**", "/api/posts/**", "/register",
-                    "/login", "/dashboard", "/css/**", "/js/**", "/images/**", "/static/**")
-                .permitAll()
-                .anyRequest().authenticated()
-            )
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .authenticationProvider(authenticationProvider());
+@Bean
+public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    http
+        .csrf(csrf -> csrf.disable())
+        .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+        .authorizeHttpRequests(auth -> auth
+            // Public endpoints
+            .requestMatchers(
+                "/api/auth/**",
+                "/register",
+                "/login",
+                "/dashboard",
+                "/css/**",
+                "/js/**",
+                "/images/**",
+                "/static/**"
+            ).permitAll()
 
-        http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+            // Public READ access (GET) for users and posts
+            .requestMatchers(HttpMethod.GET, "/api/users/**", "/api/posts/**").permitAll()
 
-        return http.build();
-    }
+            // Everything else (POST/PUT/DELETE like follow, like, comment, create post) needs auth
+            .anyRequest().authenticated()
+        )
+        // if you're still using jwtFilter
+        .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
-    @Bean
-    public AuthenticationProvider authenticationProvider() {
-        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
-        provider.setUserDetailsService((UserDetailsService) userLogic);
-        provider.setPasswordEncoder(passwordEncoder());
-        return provider;
-    }
+    return http.build();
+}
+
+
+
+  
+
+@SuppressWarnings("deprecation")
+@Bean
+public AuthenticationProvider authenticationProvider(UserDetailsService userDetailsService,
+                                                     PasswordEncoder passwordEncoder) {
+    DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
+    authProvider.setUserDetailsService(userDetailsService);
+    authProvider.setPasswordEncoder(passwordEncoder);
+    return authProvider;
+}
+
+
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {

@@ -1,14 +1,9 @@
 package com.abinav.webapplication.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
 public class PostDTO {
+
     private Long id;
     private String username;
     private String userEmail;
@@ -18,4 +13,96 @@ public class PostDTO {
     private long likeCount;
     private long commentCount;
     private boolean likedByCurrentUser;
+
+    public PostDTO() {}
+
+    public PostDTO(Long id, String username, String userEmail, String caption,
+                   String imageUrl, LocalDateTime createdAt,
+                   long likeCount, long commentCount, boolean likedByCurrentUser) {
+        this.id = id;
+        this.username = username;
+        this.userEmail = userEmail;
+        this.caption = caption;
+        this.imageUrl = imageUrl;
+        this.createdAt = createdAt;
+        this.likeCount = likeCount;
+        this.commentCount = commentCount;
+        this.likedByCurrentUser = likedByCurrentUser;
+    }
+
+    // ---- Getters ----
+
+    public Long getId() {
+        return id;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public String getUserEmail() {
+        return userEmail;
+    }
+
+    public String getCaption() {
+        return caption;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public long getLikeCount() {
+        return likeCount;
+    }
+
+    public long getCommentCount() {
+        return commentCount;
+    }
+
+    public boolean isLikedByCurrentUser() {
+        return likedByCurrentUser;
+    }
+
+    // ---- Setters ----
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public void setUserEmail(String userEmail) {
+        this.userEmail = userEmail;
+    }
+
+    public void setCaption(String caption) {
+        this.caption = caption;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public void setLikeCount(long likeCount) {
+        this.likeCount = likeCount;
+    }
+
+    public void setCommentCount(long commentCount) {
+        this.commentCount = commentCount;
+    }
+
+    public void setLikedByCurrentUser(boolean likedByCurrentUser) {
+        this.likedByCurrentUser = likedByCurrentUser;
+    }
 }

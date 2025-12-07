@@ -17,6 +17,9 @@ import com.abinav.webapplication.model.LoginRequest;
 import com.abinav.webapplication.model.LoginResponse;
 import com.abinav.webapplication.utility.JwtUtil;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
@@ -30,9 +33,12 @@ public class AuthController {
     @Autowired
     private JwtUtil jwtUtil;
 
+    private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
+
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest request) {
         try {
+            @SuppressWarnings("unused")
             Authentication auth = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
             );
@@ -42,6 +48,7 @@ public class AuthController {
 
             return ResponseEntity.ok(new LoginResponse(token));
         } catch (Exception e) {
+            logger.error("Error while logging in: ", e);
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
         }
     }
