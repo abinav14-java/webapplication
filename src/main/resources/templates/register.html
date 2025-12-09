@@ -128,6 +128,7 @@
 	      window.location.href = "/dashboard";
 	    }, 1500);
 	  } else {
+      logger.error("Registration failed with status: " + response.status);
 	    messageDiv.className = "error-message";
 	    messageDiv.innerText = "Failed to register. Try another email.";
 	  }

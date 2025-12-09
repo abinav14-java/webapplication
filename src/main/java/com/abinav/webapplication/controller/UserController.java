@@ -3,6 +3,8 @@ package com.abinav.webapplication.controller;
 import java.util.Collections;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -35,9 +37,14 @@ public class UserController {
 	@Autowired
 	private BCryptPasswordEncoder passwordEncoder;
 
+	private static final Logger logger = LoggerFactory.getLogger(FollowController.class);
+
 	@PostMapping
 	@ResponseStatus(code = HttpStatus.CREATED)
-	public ResponseEntity<LoginResponse> createUser(@RequestBody Users user) throws Exception {
+	public ResponseEntity<LoginResponse> createUser(@RequestBody Users user) {
+		try {
+			
+		
 		user.setPassword(passwordEncoder.encode(user.getPassword()));
 		
 		Users savedUser = userLogic.createUser(user);
@@ -45,6 +52,10 @@ public class UserController {
 //		return userLogic.createUser(user);
 		
 		return ResponseEntity.ok(new LoginResponse(token));
+	}catch (Exception e) {
+		logger.error("Error creating user: {}", e.getMessage());
+		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+		}
 	}
 
 	@GetMapping("/check-email")

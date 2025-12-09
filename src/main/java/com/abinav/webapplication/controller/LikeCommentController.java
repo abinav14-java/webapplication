@@ -47,6 +47,7 @@ public class LikeCommentController {
             String email = auth.getName();
             Users user = userService.findByEmail(email).orElse(null);
             if (user == null) {
+                logger.warn("Authenticated user not found in database: {}", email);
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not found");
             }
 
@@ -60,6 +61,7 @@ public class LikeCommentController {
             response.put("like", likeMap);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
+            logger.error("Error while liking post: ", e);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error: " + e.getMessage());
         }
     }
@@ -74,6 +76,7 @@ public class LikeCommentController {
             String email = auth.getName();
             Users user = userService.findByEmail(email).orElse(null);
             if (user == null) {
+                logger.warn("Authenticated user not found in database: {}", email);
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not found");
             }
 
@@ -82,6 +85,7 @@ public class LikeCommentController {
             response.put("message", "Post unliked successfully");
             return ResponseEntity.ok(response);
         } catch (Exception e) {
+            logger.error("Error while unliking post: ", e);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error: " + e.getMessage());
         }
     }

@@ -55,6 +55,8 @@ public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Excepti
                 "/static/**"
             ).permitAll()
 
+             .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
+
             // Public READ access (GET) for users and posts
             .requestMatchers(HttpMethod.GET, "/api/users/**", "/api/posts/**").permitAll()
 
