@@ -36,7 +36,7 @@ public class FollowController {
      * Follow a user
      * POST /api/users/{userId}/follow
      */
-    @PostMapping("/{userId}/follow")
+@PostMapping("/{userId}/follow")
 public ResponseEntity<?> followUser(@PathVariable Long userId, Authentication auth) {
     try {
         // 1. Check if user is authenticated
@@ -177,11 +177,21 @@ public ResponseEntity<?> followUser(@PathVariable Long userId, Authentication au
     @GetMapping("/{userId}/is-following")
     public ResponseEntity<?> isFollowing(@PathVariable Long userId, Authentication auth) {
         try {
+             if (auth == null || !auth.isAuthenticated()
+                || "anonymousUser".equals(auth.getPrincipal())) {
+            logger.warn("Unauthenticated follow attempt to userId: {}", userId);
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body("You must be logged in to follow a user");
+        }
+
             String email = auth.getName();
             Users currentUser = userService.findByEmail(email).orElse(null);
             if (currentUser == null) {
+                logger.warn("Authenticated user not found in database: {}", email);
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not found");
             }
+
+            logger.info("Checking if user {} is following user {}", email, userId);
 
             boolean isFollowing = followService.isFollowing(currentUser.getId(), userId);
             Map<String, Boolean> response = new HashMap<>();
