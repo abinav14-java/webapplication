@@ -1,4 +1,4 @@
-package com.abinav.webapplication.model;
+package com.abinav.webapplication.dto;
 
 import java.time.LocalDateTime;
 
@@ -13,12 +13,15 @@ public class PostDTO {
     private long likeCount;
     private long commentCount;
     private boolean likedByCurrentUser;
+    private Long authorId;
+    private boolean followingAuthor;
 
-    public PostDTO() {}
+    public PostDTO() {
+    }
 
     public PostDTO(Long id, String username, String userEmail, String caption,
-                   String imageUrl, LocalDateTime createdAt,
-                   long likeCount, long commentCount, boolean likedByCurrentUser) {
+            String imageUrl, LocalDateTime createdAt,
+            long likeCount, long commentCount, boolean likedByCurrentUser) {
         this.id = id;
         this.username = username;
         this.userEmail = userEmail;
@@ -104,5 +107,21 @@ public class PostDTO {
 
     public void setLikedByCurrentUser(boolean likedByCurrentUser) {
         this.likedByCurrentUser = likedByCurrentUser;
+    }
+
+    public Long getAuthorId() {
+        return authorId;
+    }
+
+    public void setAuthorId(Long authorId) {
+        this.authorId = authorId;
+    }
+
+    public boolean isFollowingAuthor() {
+        return followingAuthor;
+    }
+
+    public void setFollowingAuthor(boolean followingAuthor) {
+        this.followingAuthor = followingAuthor;
     }
 }

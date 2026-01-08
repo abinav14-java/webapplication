@@ -4,11 +4,13 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 import com.abinav.webapplication.model.Post;
-import com.abinav.webapplication.model.PostDTO;
+import com.abinav.webapplication.dto.PostDTO;
 import com.abinav.webapplication.model.Users;
 import com.abinav.webapplication.repository.UserRepository;
 import com.abinav.webapplication.service.PostService;
@@ -35,31 +37,36 @@ public class PostController {
         try {
             String userEmail = getCurrentUserEmail();
             Users user = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new Exception("User not found"));
-            
+                    .orElseThrow(() -> new Exception("User not found"));
+
             post.setUser(user);
             Post savedPost = postService.createPost(post);
             // return sanitized DTO for created post
             PostDTO dto = postService.getPostDTOById(savedPost.getId(), userEmail);
             return ResponseEntity.status(HttpStatus.CREATED).body(
-                new ApiResponse("Post created successfully", dto)
-            );
+                    new ApiResponse("Post created successfully", dto));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(new ApiResponse("Error creating post: " + e.getMessage(), null));
+                    .body(new ApiResponse("Error creating post: " + e.getMessage(), null));
         }
     }
 
     // Get all posts (for feed)
     @GetMapping
-    public ResponseEntity<?> getAllPosts() {
+    public ResponseEntity<ApiResponse> getAllPosts() {
         try {
             String userEmail = getCurrentUserEmail();
             List<PostDTO> posts = postService.getAllPosts(userEmail);
-            return ResponseEntity.ok(new ApiResponse("Posts retrieved successfully", posts));
+            return ResponseEntity.ok(
+                    new ApiResponse("Posts retrieved successfully", posts));
+
+        } catch (UsernameNotFoundException | BadCredentialsException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new ApiResponse("Unauthorized", null));
+
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(new ApiResponse("Error retrieving posts: " + e.getMessage(), null));
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse("Error retrieving posts", null));
         }
     }
 
@@ -71,7 +78,7 @@ public class PostController {
             return ResponseEntity.ok(new ApiResponse("User posts retrieved successfully", posts));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(new ApiResponse("Error retrieving user posts: " + e.getMessage(), null));
+                    .body(new ApiResponse("Error retrieving user posts: " + e.getMessage(), null));
         }
     }
 
@@ -84,7 +91,7 @@ public class PostController {
             return ResponseEntity.ok(new ApiResponse("Post retrieved successfully", dto));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(new ApiResponse("Post not found: " + e.getMessage(), null));
+                    .body(new ApiResponse("Post not found: " + e.getMessage(), null));
         }
     }
 
@@ -98,7 +105,7 @@ public class PostController {
             return ResponseEntity.ok(new ApiResponse("Post updated successfully", dto));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(new ApiResponse("Error updating post: " + e.getMessage(), null));
+                    .body(new ApiResponse("Error updating post: " + e.getMessage(), null));
         }
     }
 
@@ -110,7 +117,7 @@ public class PostController {
             return ResponseEntity.ok(new ApiResponse("Post deleted successfully", null));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(new ApiResponse("Error deleting post: " + e.getMessage(), null));
+                    .body(new ApiResponse("Error deleting post: " + e.getMessage(), null));
         }
     }
 

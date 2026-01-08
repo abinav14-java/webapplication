@@ -3,8 +3,10 @@ package com.abinav.webapplication.serviceImpl;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
 import com.abinav.webapplication.model.Follow;
 import com.abinav.webapplication.model.Users;
 import com.abinav.webapplication.repository.FollowRepository;
@@ -14,167 +16,178 @@ import com.abinav.webapplication.service.FollowService;
 @Service
 public class FollowServiceImpl implements FollowService {
 
-    @Autowired
-    private FollowRepository followRepository;
+        @Autowired
+        private FollowRepository followRepository;
 
-    @Autowired
-    private UserRepository userRepository;
+        @Autowired
+        private UserRepository userRepository;
 
-    @Override
-    public void followUser(String followerEmail, String followingEmail) throws Exception {
-        if (followerEmail.equals(followingEmail)) {
-            throw new Exception("Cannot follow yourself");
+        /*
+         * =========================================================
+         * EMAIL-BASED METHODS
+         * =========================================================
+         */
+
+        @Override
+        public void followUser(String followerEmail, String followingEmail) throws Exception {
+                if (followerEmail.equals(followingEmail)) {
+                        throw new Exception("Cannot follow yourself");
+                }
+
+                Users follower = userRepository.findByEmail(followerEmail)
+                                .orElseThrow(() -> new Exception("Follower user not found"));
+
+                Users following = userRepository.findByEmail(followingEmail)
+                                .orElseThrow(() -> new Exception("User to follow not found"));
+
+                boolean alreadyFollowing = followRepository.existsByFollowerAndFollowing(follower, following);
+
+                if (alreadyFollowing) {
+                        return; // ✅ IDEMPOTENT
+                }
+
+                Follow follow = new Follow();
+                follow.setFollower(follower);
+                follow.setFollowing(following);
+                followRepository.save(follow);
         }
 
-        Users follower = userRepository.findByEmail(followerEmail)
-            .orElseThrow(() -> new Exception("Follower user not found"));
-        
-        Users following = userRepository.findByEmail(followingEmail)
-            .orElseThrow(() -> new Exception("User to follow not found"));
-        
-        boolean alreadyFollowing = followRepository.existsByFollowerAndFollowing(follower, following);
-        if (alreadyFollowing) {
-            throw new Exception("Already following this user");
+        @Override
+        public void unfollowUser(String followerEmail, String followingEmail) throws Exception {
+                Users follower = userRepository.findByEmail(followerEmail)
+                                .orElseThrow(() -> new Exception("Follower user not found"));
+
+                Users following = userRepository.findByEmail(followingEmail)
+                                .orElseThrow(() -> new Exception("User to unfollow not found"));
+
+                followRepository.findByFollowerAndFollowing(follower, following)
+                                .ifPresent(followRepository::delete); // ✅ IDEMPOTENT
         }
 
-        Follow follow = new Follow();
-        follow.setFollower(follower);
-        follow.setFollowing(following);
-        followRepository.save(follow);
-    }
+        @Override
+        public boolean isFollowing(String followerEmail, String followingEmail) throws Exception {
+                Users follower = userRepository.findByEmail(followerEmail)
+                                .orElseThrow(() -> new Exception("User not found"));
 
-    @Override
-    public void unfollowUser(String followerEmail, String followingEmail) throws Exception {
-        Users follower = userRepository.findByEmail(followerEmail)
-            .orElseThrow(() -> new Exception("Follower user not found"));
-        
-        Users following = userRepository.findByEmail(followingEmail)
-            .orElseThrow(() -> new Exception("User to unfollow not found"));
-        
-        Optional<Follow> follow = followRepository.findByFollowerAndFollowing(follower, following);
-        if (follow.isPresent()) {
-            followRepository.delete(follow.get());
-        } else {
-            throw new Exception("Not following this user");
-        }
-    }
+                Users following = userRepository.findByEmail(followingEmail)
+                                .orElseThrow(() -> new Exception("User not found"));
 
-    @Override
-    public boolean isFollowing(String followerEmail, String followingEmail) throws Exception {
-        Users follower = userRepository.findByEmail(followerEmail)
-            .orElseThrow(() -> new Exception("User not found"));
-        
-        Users following = userRepository.findByEmail(followingEmail)
-            .orElseThrow(() -> new Exception("User not found"));
-        
-        return followRepository.existsByFollowerAndFollowing(follower, following);
-    }
-
-    @Override
-    public long getFollowerCount(String userEmail) throws Exception {
-        Users user = userRepository.findByEmail(userEmail)
-            .orElseThrow(() -> new Exception("User not found"));
-        return followRepository.countByFollowing(user);
-    }
-
-    @Override
-    public long getFollowingCount(String userEmail) throws Exception {
-        Users user = userRepository.findByEmail(userEmail)
-            .orElseThrow(() -> new Exception("User not found"));
-        return followRepository.countByFollower(user);
-    }
-
-    @Override
-    public List<Users> getFollowers(String userEmail) throws Exception {
-        Users user = userRepository.findByEmail(userEmail)
-            .orElseThrow(() -> new Exception("User not found"));
-        
-        return followRepository.findByFollowing(user)
-            .stream()
-            .map(Follow::getFollower)
-            .collect(Collectors.toList());
-    }
-
-    @Override
-    public List<Users> getFollowing(String userEmail) throws Exception {
-        Users user = userRepository.findByEmail(userEmail)
-            .orElseThrow(() -> new Exception("User not found"));
-        
-        return followRepository.findByFollower(user)
-            .stream()
-            .map(Follow::getFollowing)
-            .collect(Collectors.toList());
-    }
-
-    // Overloaded methods for Long user IDs (for controller)
-    public Follow followUser(Long followerId, Long followingId) throws Exception {
-        Users follower = userRepository.findById(followerId)
-            .orElseThrow(() -> new Exception("Follower user not found"));
-        
-        Users following = userRepository.findById(followingId)
-            .orElseThrow(() -> new Exception("User to follow not found"));
-        
-        if (followerId.equals(followingId)) {
-            throw new Exception("Cannot follow yourself");
+                return followRepository.existsByFollowerAndFollowing(follower, following);
         }
 
-        boolean alreadyFollowing = followRepository.existsByFollowerAndFollowing(follower, following);
-        if (alreadyFollowing) {
-            throw new Exception("Already following this user");
+        @Override
+        public long getFollowerCount(String userEmail) throws Exception {
+                Users user = userRepository.findByEmail(userEmail)
+                                .orElseThrow(() -> new Exception("User not found"));
+
+                return followRepository.countByFollowing(user);
         }
 
-        Follow follow = new Follow();
-        follow.setFollower(follower);
-        follow.setFollowing(following);
-        return followRepository.save(follow);
-    }
+        @Override
+        public long getFollowingCount(String userEmail) throws Exception {
+                Users user = userRepository.findByEmail(userEmail)
+                                .orElseThrow(() -> new Exception("User not found"));
 
-    public void unfollowUser(Long followerId, Long followingId) throws Exception {
-        Users follower = userRepository.findById(followerId)
-            .orElseThrow(() -> new Exception("Follower user not found"));
-        
-        Users following = userRepository.findById(followingId)
-            .orElseThrow(() -> new Exception("User to unfollow not found"));
-        
-        Optional<Follow> follow = followRepository.findByFollowerAndFollowing(follower, following);
-        if (follow.isPresent()) {
-            followRepository.delete(follow.get());
+                return followRepository.countByFollower(user);
         }
-    }
 
-    public List<Follow> getFollowers(Long userId) throws Exception {
-        Users user = userRepository.findById(userId)
-            .orElseThrow(() -> new Exception("User not found"));
-        
-        return followRepository.findByFollowing(user);
-    }
+        @Override
+        public List<Users> getFollowers(String userEmail) throws Exception {
+                Users user = userRepository.findByEmail(userEmail)
+                                .orElseThrow(() -> new Exception("User not found"));
 
-    public List<Follow> getFollowing(Long userId) throws Exception {
-        Users user = userRepository.findById(userId)
-            .orElseThrow(() -> new Exception("User not found"));
-        
-        return followRepository.findByFollower(user);
-    }
+                return followRepository.findByFollowing(user)
+                                .stream()
+                                .map(Follow::getFollower)
+                                .collect(Collectors.toList());
+        }
 
-    public long getFollowersCount(Long userId) throws Exception {
-        Users user = userRepository.findById(userId)
-            .orElseThrow(() -> new Exception("User not found"));
-        return followRepository.countByFollowing(user);
-    }
+        @Override
+        public List<Users> getFollowing(String userEmail) throws Exception {
+                Users user = userRepository.findByEmail(userEmail)
+                                .orElseThrow(() -> new Exception("User not found"));
 
-    public long getFollowingCount(Long userId) throws Exception {
-        Users user = userRepository.findById(userId)
-            .orElseThrow(() -> new Exception("User not found"));
-        return followRepository.countByFollower(user);
-    }
+                return followRepository.findByFollower(user)
+                                .stream()
+                                .map(Follow::getFollowing)
+                                .collect(Collectors.toList());
+        }
 
-    public boolean isFollowing(Long followerId, Long followingId) throws Exception {
-        Users follower = userRepository.findById(followerId)
-            .orElseThrow(() -> new Exception("User not found"));
-        
-        Users following = userRepository.findById(followingId)
-            .orElseThrow(() -> new Exception("User not found"));
-        
-        return followRepository.existsByFollowerAndFollowing(follower, following);
-    }
+        /*
+         * =========================================================
+         * ID-BASED METHODS (USED BY CONTROLLERS)
+         * =========================================================
+         */
+
+        public Follow followUser(Long followerId, Long followingId) throws Exception {
+                if (followerId.equals(followingId)) {
+                        throw new Exception("Cannot follow yourself");
+                }
+
+                Users follower = userRepository.findById(followerId)
+                                .orElseThrow(() -> new Exception("Follower user not found"));
+
+                Users following = userRepository.findById(followingId)
+                                .orElseThrow(() -> new Exception("User to follow not found"));
+
+                boolean alreadyFollowing = followRepository.existsByFollowerAndFollowing(follower, following);
+
+                if (alreadyFollowing) {
+                        return null; // ✅ IDEMPOTENT
+                }
+
+                Follow follow = new Follow();
+                follow.setFollower(follower);
+                follow.setFollowing(following);
+                return followRepository.save(follow);
+        }
+
+        public void unfollowUser(Long followerId, Long followingId) throws Exception {
+                Users follower = userRepository.findById(followerId)
+                                .orElseThrow(() -> new Exception("Follower user not found"));
+
+                Users following = userRepository.findById(followingId)
+                                .orElseThrow(() -> new Exception("User to unfollow not found"));
+
+                followRepository.findByFollowerAndFollowing(follower, following)
+                                .ifPresent(followRepository::delete); // ✅ IDEMPOTENT
+        }
+
+        public boolean isFollowing(Long followerId, Long followingId) throws Exception {
+                Users follower = userRepository.findById(followerId)
+                                .orElseThrow(() -> new Exception("User not found"));
+
+                Users following = userRepository.findById(followingId)
+                                .orElseThrow(() -> new Exception("User not found"));
+
+                return followRepository.existsByFollowerAndFollowing(follower, following);
+        }
+
+        public long getFollowersCount(Long userId) throws Exception {
+                Users user = userRepository.findById(userId)
+                                .orElseThrow(() -> new Exception("User not found"));
+
+                return followRepository.countByFollowing(user);
+        }
+
+        public long getFollowingCount(Long userId) throws Exception {
+                Users user = userRepository.findById(userId)
+                                .orElseThrow(() -> new Exception("User not found"));
+
+                return followRepository.countByFollower(user);
+        }
+
+        public List<Follow> getFollowers(Long userId) throws Exception {
+                Users user = userRepository.findById(userId)
+                                .orElseThrow(() -> new Exception("User not found"));
+
+                return followRepository.findByFollowing(user);
+        }
+
+        public List<Follow> getFollowing(Long userId) throws Exception {
+                Users user = userRepository.findById(userId)
+                                .orElseThrow(() -> new Exception("User not found"));
+
+                return followRepository.findByFollower(user);
+        }
 }

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
+
 <head>
   <title>Login • Instagram</title>
   <style>
@@ -68,6 +69,7 @@
     }
   </style>
 </head>
+
 <body>
 
   <div class="login-container">
@@ -101,7 +103,11 @@
 
       if (res.ok) {
         const data = await res.json();
-        localStorage.setItem('token', data.token);
+
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("userId", data.userId);
+        localStorage.setItem("username", data.username);
+
         msg.style.color = 'green';
         msg.innerText = "Login successful!";
         setTimeout(() => {
@@ -115,4 +121,5 @@
   </script>
 
 </body>
+
 </html>
