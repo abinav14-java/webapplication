@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
+
 <head>
   <meta charset="UTF-8">
   <title>Register</title>
@@ -19,7 +20,7 @@
       border: 1px solid #dbdbdb;
       border-radius: 8px;
       width: 350px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
       text-align: center;
     }
 
@@ -77,11 +78,12 @@
     }
   </style>
 </head>
+
 <body>
 
   <div class="register-container">
     <h2>Sign Up</h2>
-    
+
     <div id="message"></div>
 
     <form id="registerForm">
@@ -99,7 +101,7 @@
   <script>
     document.getElementById("registerForm").addEventListener("submit", async function (e) {
       e.preventDefault();
-      
+
       const username = document.getElementById("name").value;
       const email = document.getElementById("email").value;
       const password = document.getElementById("password").value;
@@ -114,27 +116,28 @@
 
       const messageDiv = document.getElementById("message");
 
-	  if (response.ok) {
-	    const data = await response.json();
+      if (response.ok) {
+        const data = await response.json();
 
-	    // Save token to localStorage (auto login)
-	    localStorage.setItem("token", data.token);
+        // Save token to localStorage (auto login)
+        localStorage.setItem("token", data.token);
 
-	    messageDiv.className = "success-message";
-	    messageDiv.innerText = "Account created! Redirecting to dashboard...";
+        messageDiv.className = "success-message";
+        messageDiv.innerText = "Account created! Redirecting to dashboard...";
 
-	    // Redirect to dashboard directly
-	    setTimeout(() => {
-	      window.location.href = "/dashboard";
-	    }, 1500);
-	  } else {
-      logger.error("Registration failed with status: " + response.status);
-	    messageDiv.className = "error-message";
-	    messageDiv.innerText = "Failed to register. Try another email.";
-	  }
+        // Redirect to dashboard directly
+        setTimeout(() => {
+          window.location.href = "/dashboard";
+        }, 1500);
+      } else {
+        console.error("Registration failed with status:", response.status);
+        messageDiv.className = "error-message";
+        messageDiv.innerText = "Failed to register. Try another email.";
+      }
 
     });
   </script>
 
 </body>
+
 </html>

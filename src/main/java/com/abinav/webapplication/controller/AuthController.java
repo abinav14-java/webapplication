@@ -38,19 +38,30 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest request) {
         try {
-            @SuppressWarnings("unused")
             Authentication auth = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
-            );
+                    new UsernamePasswordAuthenticationToken(
+                            request.getEmail(),
+                            request.getPassword()));
 
-            UserDetails userDetails = userLogic.loadUserByUsername(request.getEmail());
-            String token = jwtUtil.generateToken(userDetails.getUsername());
+            // Load full user entity (NOT just UserDetails)
+            var user = userLogic.findByEmail(request.getEmail())
+                    .orElseThrow(() -> new RuntimeException("User not found"));
 
-            return ResponseEntity.ok(new LoginResponse(token));
+            String token = jwtUtil.generateToken(user.getEmail());
+
+            return ResponseEntity.ok(
+                    new LoginResponse(
+                            token,
+                            user.getId(), // ✅ SEND userId
+                            user.getUsername() // ✅ SEND username
+                    ));
+
         } catch (Exception e) {
             logger.error("Error while logging in: ", e);
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
+            return ResponseEntity
+                    .status(HttpStatus.UNAUTHORIZED)
+                    .body("Invalid credentials");
         }
     }
-}
 
+}

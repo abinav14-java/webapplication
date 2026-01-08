@@ -26,61 +26,54 @@ public class JwtFilter extends OncePerRequestFilter {
     private UserLogic userLogic;
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
-                                    FilterChain chain) throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request,
+            HttpServletResponse response,
+            FilterChain chain)
+            throws ServletException, IOException {
 
         String path = request.getRequestURI();
-        String method = request.getMethod();
 
-        // 🔓 Skip JWT filter for public endpoints
-        if (path.startsWith("/api/auth") || 
-             (path.startsWith("/api/users") && "GET".equals(method)) || 
-            (path.startsWith("/api/posts") && "GET".equals(method)) ||  // Only GET is public
-            path.equals("/login") || 
-            path.equals("/register") || 
-            path.equals("/dashboard") ||
-            path.startsWith("/static/")) {
-            chain.doFilter(request, response);  // skip JWT validation
+        // 🔓 Public endpoints ONLY
+        if (path.startsWith("/api/auth") ||
+                path.equals("/login") ||
+                path.equals("/register") ||
+                path.startsWith("/static/")) {
+
+            chain.doFilter(request, response);
             return;
         }
 
         String authHeader = request.getHeader("Authorization");
-        String token = null;
-        String email = null;
 
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            token = authHeader.substring(7);
-            try {
-                email = jwtUtil.extractUsername(token);
-            } catch (Exception e) {
-                // Invalid or malformed token — respond 401 and stop filter chain
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                response.setContentType("application/json");
-                response.getWriter().write("{\"message\":\"Invalid or expired token\"}");
-                return;
-            }
-        }
+            String token = authHeader.substring(7);
 
-        if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             try {
-                UserDetails userDetails = userLogic.loadUserByUsername(email);
+                String email = jwtUtil.extractUsername(token);
 
-                if (jwtUtil.validateToken(token)) {
-                    UsernamePasswordAuthenticationToken authToken =
-                        new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-                    SecurityContextHolder.getContext().setAuthentication(authToken);
+                if (email != null &&
+                        SecurityContextHolder.getContext().getAuthentication() == null &&
+                        jwtUtil.validateToken(token)) {
+
+                    UserDetails userDetails = userLogic.loadUserByUsername(email);
+
+                    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                            userDetails, null, userDetails.getAuthorities());
+
+                    authToken.setDetails(request);
+                    SecurityContextHolder.getContext()
+                            .setAuthentication(authToken);
                 }
+
             } catch (Exception e) {
-                // If any error occurs while loading user or validating token, respond 401
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 response.setContentType("application/json");
-                response.getWriter().write("{\"message\":\"Invalid or expired token\"}");
+                response.getWriter()
+                        .write("{\"message\":\"Invalid or expired token\"}");
                 return;
             }
         }
 
         chain.doFilter(request, response);
     }
-
 }
-
