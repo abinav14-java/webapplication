@@ -48,8 +48,10 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
+
+                   .requestMatchers(HttpMethod.POST, "/api/users").permitAll() //register
                         // Public endpoints
-                        .requestMatchers(PUBLIC_URLS).permitAll()
+                    .requestMatchers(PUBLIC_URLS).permitAll()
 
                         // Public READ access (GET) for users and posts
                         .requestMatchers(HttpMethod.GET, READ_ONLY_URLS).permitAll()

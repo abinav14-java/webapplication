@@ -99,42 +99,40 @@
   </div>
 
   <script>
-    document.getElementById("registerForm").addEventListener("submit", async function (e) {
+    const form = document.getElementById('registerForm');
+    const msg = document.getElementById('message');
+    const nameInput = document.getElementById('name');
+    const emailInput = document.getElementById('email');
+    const passwordInput = document.getElementById('password');
+
+    form.addEventListener('submit', async e => {
       e.preventDefault();
+      const btn = e.submitter;
+      btn.disabled = true;
+      btn.textContent = 'Registering...';
 
-      const username = document.getElementById("name").value;
-      const email = document.getElementById("email").value;
-      const password = document.getElementById("password").value;
+      try {
+        const res = await fetch('/api/users', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username: nameInput.value, email: emailInput.value, password: passwordInput.value })
+        });
 
-      const response = await fetch("/api/users", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ username, email, password })
-      });
-
-      const messageDiv = document.getElementById("message");
-
-      if (response.ok) {
-        const data = await response.json();
-
-        // Save token to localStorage (auto login)
-        localStorage.setItem("token", data.token);
-
-        messageDiv.className = "success-message";
-        messageDiv.innerText = "Account created! Redirecting to dashboard...";
-
-        // Redirect to dashboard directly
-        setTimeout(() => {
-          window.location.href = "/dashboard";
-        }, 1500);
-      } else {
-        console.error("Registration failed with status:", response.status);
-        messageDiv.className = "error-message";
-        messageDiv.innerText = "Failed to register. Try another email.";
+        if (res.ok) {
+          const { token } = await res.json();
+          localStorage.setItem('token', token);
+          msg.className = 'success-message';
+          msg.textContent = 'Account created! Redirecting...';
+          setTimeout(() => (window.location.href = '/dashboard'), 1500);
+        } else {
+          throw new Error('Registration failed');
+        }
+      } catch (e) {
+        msg.className = 'error-message';
+        msg.textContent = 'Failed to register. Try another email.';
+        btn.disabled = false;
+        btn.textContent = 'Register';
       }
-
     });
   </script>
 

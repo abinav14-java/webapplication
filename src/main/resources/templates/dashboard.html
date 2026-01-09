@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
-
+<html lang="en">
 
 <head>
+  <meta charset="UTF-8" />
   <title>Dashboard - InstaClone</title>
-  <meta charset="UTF-8">
+
   <style>
     * {
       margin: 0;
@@ -12,408 +12,936 @@
       box-sizing: border-box;
     }
 
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-      background-color: #fafafa;
-    }
-
-    /* Layout */
-    .app-container {
-      max-width: 1100px;
-      margin: 20px auto;
+    /* LEFT SIDEBAR */
+    #left-sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100vh;
+      width: 80px;
+      background: linear-gradient(180deg, #fff 0%, #f8f9fa 100%);
+      border-right: 1px solid #e0e0e0;
       display: flex;
-      gap: 20px;
-      padding: 0 16px
+      flex-direction: column;
+      align-items: center;
+      padding-top: 24px;
+      z-index: 1000;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
     }
 
-    .left-col {
-      width: 220px;
+    #left-sidebar>div:first-child {
+      font-size: 28px;
+      cursor: pointer;
+      margin-bottom: 32px;
+      padding: 12px;
+      border-radius: 12px;
+      transition: all 0.3s ease;
+      color: #1a1a1a;
+    }
+
+    #left-sidebar>div:first-child:hover {
+      background: #f0f0f0;
+      transform: scale(1.1);
+    }
+
+    #sidebarCreateBtn {
+      font-size: 32px;
+      font-weight: 700;
+      cursor: pointer;
+      padding: 12px 14px;
+      border-radius: 12px;
+      transition: all 0.3s ease;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    }
+
+    #sidebarCreateBtn:hover {
+      transform: scale(1.12);
+      box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
     }
 
     .center-col {
+      max-width: 700px;
+      margin-left: 80px;
+      /* exactly sidebar width */
+      margin-top: 20px;
+      padding: 0 16px;
+    }
+
+
+
+    /* TITLE CARD */
+    .title-card {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border: none;
+      border-radius: 16px;
+      padding: 32px 24px;
+      margin-bottom: 24px;
+      text-align: center;
+      box-shadow: 0 8px 24px rgba(102, 126, 234, 0.25);
+      color: white;
+    }
+
+    .profile-title {
+      font-size: 36px;
+      font-weight: 800;
+      letter-spacing: -1px;
+    }
+
+    /* PROFILE STATS CARD */
+    .profile-stats-card {
+      background: white;
+      border: none;
+      border-radius: 16px;
+      padding: 28px 24px;
+      margin-bottom: 28px;
+      text-align: center;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+      transition: all 0.3s ease;
+    }
+
+    .profile-stats-card:hover {
+      box-shadow: 0 12px 36px rgba(0, 0, 0, 0.12);
+      transform: translateY(-4px);
+    }
+
+    .stats-row {
+      display: flex;
+      justify-content: space-around;
+      gap: 16px;
+    }
+
+    .stats-row div {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
       flex: 1;
-      max-width: 640px;
+      padding: 12px;
+      border-radius: 12px;
+      transition: all 0.3s ease;
     }
 
-    .right-col {
-      width: 220px;
+    .stats-row div:hover {
+      background: #f8f9fa;
     }
 
-    /* Navbar */
-    .navbar {
+    .stats-row strong {
+      font-size: 24px;
+      color: #667eea;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .stats-row span {
+      font-size: 13px;
+      color: #666;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* POSTS */
+    .post {
+      background: white;
+      border: none;
+      border-radius: 16px;
+      margin-bottom: 24px;
+      overflow: hidden;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+      transition: all 0.3s ease;
+    }
+
+    .post:hover {
+      box-shadow: 0 12px 36px rgba(0, 0, 0, 0.12);
+      transform: translateY(-4px);
+    }
+
+    .post-header {
       display: flex;
       align-items: center;
+      padding: 16px;
+      justify-content: space-between;
+      border-bottom: 1px solid #f0f0f0;
+      background: #fff;
+      position: relative;
+      z-index: 2;
       gap: 12px;
-      padding: 14px 0 6px 0
-    }
-
-    .brand {
-      font-size: 28px;
-      font-weight: 700;
-      background: linear-gradient(45deg, #f09433, #bc1888);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent
-    }
-
-    .search {
-      flex: 1
-    }
-
-    .search input {
-      width: 100%;
-      padding: 8px 12px;
-      border-radius: 18px;
-      border: 1px solid #e6e6e6;
-    }
-
-    /* Feed */
-    .center-col .feed {
-      display: block
-    }
-
-    .create-post {
-      background: #fff;
-      border: 1px solid #eaeaea;
-      padding: 12px;
-      border-radius: 10px;
-      margin-bottom: 16px
-    }
-
-    .create-post textarea {
-      width: 100%;
-      min-height: 60px;
-      border: 1px solid #eef0f2;
-      border-radius: 8px;
-      padding: 8px
-    }
-
-    .create-post input[type="text"] {
-      width: 100%;
-      padding: 8px;
-      border-radius: 8px;
-      border: 1px solid #eef0f2
-    }
-
-    .create-post .actions {
-      display: flex;
-      justify-content: flex-end;
-      gap: 8px;
-      margin-top: 8px
-    }
-
-    .post {
-      background: #fff;
-      border: 1px solid #eee;
-      border-radius: 10px;
-      margin-bottom: 18px;
-      overflow: hidden
     }
 
     .profile-pic {
-      width: 40px;
-      height: 40px;
+      width: 48px;
+      height: 48px;
+      min-width: 48px;
+      min-height: 48px;
       border-radius: 50%;
-      object-fit: cover;
-      margin-right: 12px;
+      overflow: hidden;
       flex-shrink: 0;
-      border: 2px solid #e1e1e1;
+      border: 2px solid #f0f0f0;
     }
 
     .profile-pic img {
       width: 100%;
       height: 100%;
-      border-radius: 50%;
       object-fit: cover;
+      display: block;
     }
 
-    .post-header>div {
+    .post-header>div:not(.profile-pic) {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
       flex: 1;
+      min-width: 0;
     }
 
-    .username {
-      font-weight: 600;
-      color: #262626;
-      font-size: 14px;
+    .post-header .username {
+      font-weight: 700;
+      font-size: 15px;
+      color: #1a1a1a;
     }
 
     .post-time {
       font-size: 12px;
       color: #999;
-      margin-top: 2px;
+      margin-top: 4px;
+    }
+
+    .follow-btn {
+      padding: 6px 16px;
+      border: 1px solid #ddd;
+      background: white;
+      border-radius: 20px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 13px;
+      color: #1a1a1a;
+      transition: all 0.2s ease;
+    }
+
+    .follow-btn:hover {
+      background: #f0f0f0;
+      border-color: #999;
+    }
+
+    .follow-btn.following {
+      background: #f0f0f0;
+      border-color: #999;
     }
 
     .post-image {
-      width: 100%;
-      background: #f0f0f0;
-      max-height: 600px;
+      max-height: 500px;
       overflow: hidden;
     }
 
+
     .post-image img {
       width: 100%;
+      height: 100%;
+      object-fit: cover;
       display: block;
     }
 
     .post-actions {
+      padding: 16px;
       display: flex;
-      gap: 10px;
-      padding: 12px 16px;
-      border-bottom: 1px solid #e1e1e1;
+      gap: 24px;
+      align-items: center;
+      border-bottom: 1px solid #f0f0f0;
     }
 
     .action-btn {
-      background: none;
       border: none;
+      background: none;
       cursor: pointer;
       font-size: 18px;
-      padding: 4px 8px;
-      border-radius: 4px;
-      transition: background 0.2s;
+      color: #666;
+      transition: all 0.2s ease;
       display: flex;
       align-items: center;
-      gap: 4px;
-      color: #262626;
+      gap: 8px;
+      padding: 8px 0;
+      font-weight: 500;
+      user-select: none;
     }
 
     .action-btn:hover {
-      background: #f0f0f0;
+      color: #1a1a1a;
+      transform: scale(1.1);
     }
 
-    .action-btn.liked {
+    .like-btn {
+      color: #666;
+    }
+
+    .like-btn.liked {
       color: #e74c3c;
+      font-weight: 700;
+    }
+
+    .like-btn.liked:hover {
+      color: #c0392b;
     }
 
     .like-count,
     .comment-count {
       font-size: 14px;
-      color: #262626;
+      font-weight: 600;
+      min-width: 20px;
     }
 
     .post-caption {
-      padding: 0 16px 12px;
-      font-size: 14px;
-      line-height: 1.4;
+      padding: 16px;
+      border-bottom: 1px solid #f0f0f0;
+      line-height: 1.5;
     }
 
     .post-caption .username {
-      margin-right: 4px;
+      font-weight: 700;
+      margin-right: 6px;
+      color: #1a1a1a;
     }
 
+    .post-caption {
+      color: #333;
+      font-size: 14px;
+    }
+
+    /* COMMENTS */
     .comments-section {
-      padding: 12px 16px;
-      border-top: 1px solid #e1e1e1;
-      background: #f9f9f9;
+      padding: 16px;
+      background: #fafafa;
     }
 
     .comments-list {
-      max-height: 300px;
-      overflow-y: auto;
       margin-bottom: 12px;
+      max-height: 220px;
+      overflow-y: auto;
+    }
+
+    .comments-list::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .comments-list::-webkit-scrollbar-thumb {
+      background: #ddd;
+      border-radius: 3px;
+    }
+
+    .comments-list::-webkit-scrollbar-thumb:hover {
+      background: #999;
     }
 
     .comment {
-      display: flex;
-      gap: 8px;
       padding: 8px 0;
       font-size: 13px;
-      border-bottom: 1px solid #e1e1e1;
-      align-items: flex-start;
-    }
-
-    .comment:last-child {
-      border-bottom: none;
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      line-height: 1.4;
     }
 
     .comment .username {
-      font-size: 13px;
-      margin-right: 4px;
+      font-weight: 600;
+      color: #1a1a1a;
     }
 
     .comment-text {
-      flex: 1;
-      color: #262626;
-      word-wrap: break-word;
-    }
-
-    .delete-btn {
-      background: none;
-      border: none;
-      color: #e74c3c;
-      cursor: pointer;
-      font-size: 12px;
-      padding: 0;
-      opacity: 0.7;
-      transition: opacity 0.2s;
-    }
-
-    .delete-btn:hover {
-      opacity: 1;
+      color: #333;
+      word-break: break-word;
     }
 
     .add-comment {
       display: flex;
-      gap: 8px;
+      gap: 10px;
+      align-items: center;
     }
 
     .add-comment input {
       flex: 1;
-      border: 1px solid #e1e1e1;
-      border-radius: 18px;
-      padding: 8px 16px;
+      border: 1px solid #ddd;
+      border-radius: 24px;
+      padding: 10px 18px;
       font-size: 13px;
+      font-family: inherit;
       outline: none;
-      background: #fff;
+      transition: all 0.2s ease;
+      background: white;
+    }
+
+    .add-comment input::placeholder {
+      color: #999;
     }
 
     .add-comment input:focus {
-      border-color: #3897f0;
+      border-color: #667eea;
+      background: #f9f9ff;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
     }
 
     .add-comment button {
-      background: #3897f0;
+      background: none;
       border: none;
-      color: #fff;
-      padding: 8px 16px;
-      border-radius: 18px;
+      color: #667eea;
+      font-weight: 700;
       cursor: pointer;
       font-size: 13px;
-      font-weight: 600;
-      transition: background 0.2s;
+      padding: 0 8px;
+      transition: all 0.2s ease;
     }
 
     .add-comment button:hover {
-      background: #317ec7;
+      color: #764ba2;
+      transform: scale(1.1);
     }
 
-    /* Heart animation */
-    .heart {
-      display: inline-block;
-      transition: transform 160ms ease, opacity 160ms ease;
-      will-change: transform, opacity;
+    .add-comment button:disabled {
+      color: #bbb;
+      cursor: not-allowed;
+      transform: scale(1);
     }
 
-    .action-btn.liked .heart {
-      transform: scale(1.25);
+    /* ===== DARK MODE ===== */
+    body.dark-mode {
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      color: #e0e0e0;
+    }
+
+    body.dark-mode #left-sidebar {
+      background: linear-gradient(180deg, #0f3460 0%, #1a1a2e 100%);
+      border-right-color: #333;
+    }
+
+    body.dark-mode .title-card {
+      background: linear-gradient(135deg, #16213e 0%, #0f3460 100%);
+      color: #e0e0e0;
+    }
+
+    body.dark-mode .profile-stats-card {
+      background: #1a1a2e;
+      color: #e0e0e0;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+    }
+
+    body.dark-mode .post {
+      background: #1a1a2e;
+      color: #e0e0e0;
+      border-color: #333;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    }
+
+    body.dark-mode .post-caption {
+      border-top-color: #333;
+      color: #e0e0e0;
+    }
+
+    body.dark-mode .comment {
+      color: #e0e0e0;
+    }
+
+    body.dark-mode .add-comment input {
+      background: #16213e;
+      color: #e0e0e0;
+      border-color: #333;
+    }
+
+    body.dark-mode .add-comment input::placeholder {
+      color: #888;
+    }
+
+    /* ===== TOAST NOTIFICATIONS ===== */
+    .toast-container {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .toast {
+      background: white;
+      padding: 16px 24px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 300px;
+      animation: slideIn 0.3s ease-out;
+    }
+
+    .toast.success {
+      border-left: 4px solid #27ae60;
+    }
+
+    .toast.error {
+      border-left: 4px solid #e74c3c;
+    }
+
+    .toast.info {
+      border-left: 4px solid #667eea;
+    }
+
+    @keyframes slideIn {
+      from {
+        transform: translateX(400px);
+        opacity: 0;
+      }
+
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+
+    @keyframes slideOut {
+      from {
+        transform: translateX(0);
+        opacity: 1;
+      }
+
+      to {
+        transform: translateX(400px);
+        opacity: 0;
+      }
+    }
+
+    .toast.removing {
+      animation: slideOut 0.3s ease-in;
+    }
+
+    /* ===== POST ACTIONS MENU ===== */
+    .post-menu {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: white;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      z-index: 1000;
+      min-width: 120px;
+    }
+
+    body.dark-mode .post-menu {
+      background: #16213e;
+      border-color: #333;
+    }
+
+    .post-menu button {
+      width: 100%;
+      border: none;
+      background: none;
+      padding: 10px 16px;
+      text-align: left;
+      cursor: pointer;
+      font-size: 14px;
+      color: #1a1a1a;
+      transition: background 0.2s;
+    }
+
+    body.dark-mode .post-menu button {
+      color: #e0e0e0;
+    }
+
+    .post-menu button:hover {
+      background: #f5f5f5;
+    }
+
+    body.dark-mode .post-menu button:hover {
+      background: #0f3460;
+    }
+
+    .post-menu button.danger {
       color: #e74c3c;
     }
 
-    .heart.pop {
-      animation: pop 320ms ease forwards;
+    /* ===== SEARCH BAR ===== */
+    .search-bar {
+      background: white;
+      padding: 12px 16px;
+      border-radius: 20px;
+      border: 1px solid #ddd;
+      width: 100%;
+      margin-bottom: 24px;
+      font-size: 14px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
     }
 
-    @keyframes pop {
-      0% {
-        transform: scale(0.8);
-        opacity: 0.8
-      }
-
-      50% {
-        transform: scale(1.5);
-        opacity: 1
-      }
-
-      100% {
-        transform: scale(1.1);
-        opacity: 1
-      }
+    body.dark-mode .search-bar {
+      background: #16213e;
+      border-color: #333;
+      color: #e0e0e0;
     }
 
-    /* Likers modal */
-    .modal-backdrop {
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.5);
-      display: none;
+    .search-bar::placeholder {
+      color: #999;
+    }
+
+    .search-results {
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      margin-bottom: 24px;
+      overflow: hidden;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    body.dark-mode .search-results {
+      background: #1a1a2e;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    }
+
+    .search-result-item {
+      padding: 12px 16px;
+      border-bottom: 1px solid #f0f0f0;
+      cursor: pointer;
+      transition: background 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    body.dark-mode .search-result-item {
+      border-bottom-color: #333;
+    }
+
+    .search-result-item:hover {
+      background: #f5f5f5;
+    }
+
+    body.dark-mode .search-result-item:hover {
+      background: #16213e;
+    }
+
+    .search-result-item img {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+    }
+
+    /* ===== PROFILE PAGE ===== */
+    .profile-page {
+      background: white;
+      border-radius: 16px;
+      padding: 32px 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+    }
+
+    body.dark-mode .profile-page {
+      background: #1a1a2e;
+      color: #e0e0e0;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+    }
+
+    .profile-header {
+      display: flex;
+      gap: 32px;
+      margin-bottom: 32px;
+      align-items: flex-start;
+    }
+
+    .profile-avatar {
+      width: 150px;
+      height: 150px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      display: flex;
       align-items: center;
       justify-content: center;
-      z-index: 10000
+      font-size: 60px;
+      flex-shrink: 0;
     }
 
-    .modal {
-      background: #fff;
-      width: 320px;
-      border-radius: 8px;
-      padding: 12px;
-      box-shadow: 0 6px 22px rgba(0, 0, 0, 0.2)
+    .profile-info h2 {
+      font-size: 28px;
+      margin-bottom: 8px;
     }
 
-    .modal h3 {
-      margin: 0 0 8px 0;
-      font-size: 16px
+    .profile-info p {
+      color: #666;
+      margin-bottom: 16px;
+      font-size: 14px;
     }
 
-    .modal .liker {
-      padding: 8px 6px;
-      border-bottom: 1px solid #f0f0f0
+    body.dark-mode .profile-info p {
+      color: #aaa;
     }
 
-    .modal .close {
-      float: right;
+    .profile-stats {
+      display: flex;
+      gap: 32px;
+      margin-bottom: 24px;
+    }
+
+    .profile-stats div {
+      text-align: center;
+    }
+
+    .profile-stats strong {
+      display: block;
+      font-size: 24px;
+      margin-bottom: 4px;
+    }
+
+    .profile-stats span {
+      font-size: 12px;
+      color: #666;
+    }
+
+    body.dark-mode .profile-stats span {
+      color: #aaa;
+    }
+
+    /* ===== MODAL OVERRIDES FOR DARK MODE ===== */
+    body.dark-mode #post-modal {
+      background: rgba(0, 0, 0, 0.7) !important;
+    }
+
+    body.dark-mode #post-modal>div {
+      background: #1a1a2e !important;
+      color: #e0e0e0 !important;
+    }
+
+    body.dark-mode #post-modal input,
+    body.dark-mode #post-modal textarea {
+      background: #16213e !important;
+      color: #e0e0e0 !important;
+      border-color: #333 !important;
+    }
+
+    body.dark-mode #post-modal input::placeholder,
+    body.dark-mode #post-modal textarea::placeholder {
+      color: #888 !important;
+    }
+
+    /* ===== INFINITE SCROLL LOADER ===== */
+    .loader {
+      text-align: center;
+      padding: 20px;
+      color: #667eea;
+    }
+
+    .loader span {
+      animation: bounce 1.4s infinite;
+    }
+
+    .loader span:nth-child(1) {
+      animation-delay: 0s;
+    }
+
+    .loader span:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+
+    .loader span:nth-child(3) {
+      animation-delay: 0.4s;
+    }
+
+    @keyframes bounce {
+
+      0%,
+      80%,
+      100% {
+        transform: translateY(0);
+      }
+
+      40% {
+        transform: translateY(-10px);
+      }
+    }
+
+    /* ===== HASHTAG STYLING ===== */
+    .hashtag {
+      color: #667eea;
       cursor: pointer;
-      font-weight: 700
+      font-weight: 600;
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .hashtag:hover {
+      color: #764ba2;
+      text-decoration: underline;
+    }
+
+    body.dark-mode .hashtag {
+      color: #8b9fff;
+    }
+
+    /* ===== DELETE CONFIRMATION MODAL ===== */
+    .confirmation-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+    }
+
+    .confirmation-content {
+      background: white;
+      border-radius: 12px;
+      padding: 24px;
+      max-width: 400px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    body.dark-mode .confirmation-content {
+      background: #1a1a2e;
+      color: #e0e0e0;
+    }
+
+    .confirmation-content h3 {
+      margin-bottom: 12px;
+      font-size: 18px;
+    }
+
+    .confirmation-content p {
+      color: #666;
+      margin-bottom: 24px;
+      font-size: 14px;
+    }
+
+    body.dark-mode .confirmation-content p {
+      color: #aaa;
+    }
+
+    .confirmation-actions {
+      display: flex;
+      gap: 12px;
+    }
+
+    .confirmation-actions button {
+      flex: 1;
+      padding: 10px 16px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 14px;
+      transition: all 0.2s;
+    }
+
+    .confirmation-actions .btn-cancel {
+      background: #f0f0f0;
+      color: #1a1a1a;
+    }
+
+    body.dark-mode .confirmation-actions .btn-cancel {
+      background: #16213e;
+      color: #e0e0e0;
+    }
+
+    .confirmation-actions .btn-delete {
+      background: #e74c3c;
+      color: white;
+    }
+
+    .confirmation-actions button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     }
   </style>
 </head>
 
 <body>
-  <!-- Navbar -->
-  <div class="navbar">
-    <div class="brand">InstaClone</div>
-    <div class="search"><input id="global-search" placeholder="Search users or posts..."></div>
-    <div><button onclick="logout()">Logout</button></div>
-  </div>
 
-  <div class="app-container">
-    <div class="left-col">
-      <div style="background:#fff;border:1px solid #eee;padding:12px;border-radius:10px;text-align:center">
-        <img src="https://i.pravatar.cc/80?u=me" style="border-radius:50%;width:80px;height:80px;" />
-        <div style="margin-top:8px;font-weight:700">You</div>
-        <div style="color:#777;font-size:13px">@yourhandle</div>
-      </div>
+  <div id="left-sidebar">
+
+    <div style="cursor:pointer;width:50px;height:50px;display:flex;align-items:center;justify-content:center"
+      onclick="window.location.href='/dashboard'" title="Home">
+      <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.5"
+        color="#E1306C">
+        <rect x="2" y="2" width="20" height="20" rx="4.5"></rect>
+        <circle cx="12" cy="12" r="3.5"></circle>
+        <circle cx="17.5" cy="6.5" r="1.5"></circle>
+      </svg>
     </div>
 
-    <div class="center-col">
-      <div class="create-post">
-        <input id="post-image" type="text" placeholder="Image URL (optional)" />
-        <textarea id="post-caption" placeholder="Write a caption..."></textarea>
-        <div class="actions">
-          <button onclick="createPost()"
-            style="background:#3897f0;border:none;color:#fff;padding:8px 12px;border-radius:8px">Post</button>
+    <div id="sidebarCreateBtn" style="font-size:28px;font-weight:700;cursor:pointer;margin-top:16px"
+      title="Create Post">
+      +
+    </div>
+
+    <div id="sidebarProfileBtn" style="font-size:28px;cursor:pointer;margin-top:16px" title="My Profile">
+      👤
+    </div>
+
+    <div id="sidebarSearchBtn" style="font-size:28px;cursor:pointer;margin-top:16px" title="Search">
+      🔍
+    </div>
+
+    <div id="sidebarThemeBtn" style="font-size:28px;cursor:pointer;margin-top:auto;margin-bottom:24px"
+      title="Toggle Theme">
+      🌙
+    </div>
+
+    <div id="sidebarLogoutBtn" style="font-size:28px;cursor:pointer;color:#dc3545" title="Logout">
+      🚪
+    </div>
+
+    <input type="file" id="sidebarPostInput" accept="image/*" hidden />
+  </div>
+
+
+  <div class="center-col">
+
+    <!-- Search Bar -->
+    <div id="search-section" style="display:none;">
+      <input type="text" id="search-input" class="search-bar" placeholder="Search posts by caption or #hashtag...">
+      <div id="search-results" class="search-results" style="display:none;"></div>
+    </div>
+
+    <!-- Profile Page -->
+    <div id="profile-page" style="display:none;"></div>
+
+    <!-- Dashboard Content -->
+    <div id="dashboard-content">
+      <div class="title-card">
+        <h1 class="profile-title">InstaClone</h1>
+      </div>
+
+      <div class="profile-stats-card">
+        <div class="stats-row">
+          <div>
+            <strong id="postCount">0</strong>
+            <span>Posts</span>
+          </div>
+          <div>
+            <strong id="followerCount">0</strong>
+            <span>Followers</span>
+          </div>
+          <div>
+            <strong id="followingCount">0</strong>
+            <span>Following</span>
+          </div>
         </div>
       </div>
 
-      <!-- Stories (Instagram-like) -->
-      <div class="stories stories-container"></div>
+      <!-- FEED -->
+      <div class="feed" id="feed"></div>
 
-      <!-- Feed -->
-      <div class="feed" id="feed">
-        <!-- Posts will be loaded here -->
+      <!-- Infinite scroll loader -->
+      <div id="loader" class="loader" style="display:none;">
+        <span>●</span><span>●</span><span>●</span>
       </div>
     </div>
 
-    <div class="right-col">
-      <div style="background:#fff;border:1px solid #eee;padding:12px;border-radius:10px">
-        <div style="font-weight:700;margin-bottom:8px">Suggested</div>
-        <div style="color:#777;font-size:13px">Follow some users to see posts here</div>
-      </div>
-    </div>
   </div>
+
+  <!-- Toast Container -->
+  <div id="toast-container" class="toast-container"></div>
 
   <script src="/js/dashboard.js"></script>
-  <!-- Likers modal -->
-  <div id="likers-backdrop" class="modal-backdrop">
-    <div class="modal" id="likers-modal">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-        <h3>Likes</h3>
-        <div class="close" onclick="hideLikersModal()">✕</div>
-      </div>
-      <div id="likers-list"></div>
-    </div>
-  </div>
-  <!-- Debug banner -->
-  <div id="debug-banner"
-    style="position:fixed;bottom:12px;right:12px;background:#fff;padding:8px 12px;border:1px solid #ddd;border-radius:8px;box-shadow:0 2px 6px rgba(0,0,0,0.08);font-size:12px;z-index:9999;color:#222">
-    Loading...</div>
 </body>
 
 </html>
