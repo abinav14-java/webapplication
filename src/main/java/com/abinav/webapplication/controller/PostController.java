@@ -99,8 +99,24 @@ public class PostController {
     @PutMapping("/{postId}")
     public ResponseEntity<?> updatePost(@PathVariable Long postId, @RequestBody Post post) {
         try {
-            Post updatedPost = postService.updatePost(postId, post);
             String currentUserEmail = getCurrentUserEmail();
+
+            // Check if user is authenticated
+            if (currentUserEmail == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(new ApiResponse("You must be logged in to edit posts", null));
+            }
+
+            // Get the existing post
+            Post existingPost = postService.getPostById(postId);
+
+            // Check if current user is the post owner
+            if (!existingPost.getUser().getEmail().equals(currentUserEmail)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(new ApiResponse("You can only edit your own posts", null));
+            }
+
+            Post updatedPost = postService.updatePost(postId, post);
             PostDTO dto = postService.getPostDTOById(updatedPost.getId(), currentUserEmail);
             return ResponseEntity.ok(new ApiResponse("Post updated successfully", dto));
         } catch (Exception e) {
@@ -113,6 +129,23 @@ public class PostController {
     @DeleteMapping("/{postId}")
     public ResponseEntity<?> deletePost(@PathVariable Long postId) {
         try {
+            String currentUserEmail = getCurrentUserEmail();
+
+            // Check if user is authenticated
+            if (currentUserEmail == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(new ApiResponse("You must be logged in to delete posts", null));
+            }
+
+            // Get the post
+            Post post = postService.getPostById(postId);
+
+            // Check if current user is the post owner
+            if (!post.getUser().getEmail().equals(currentUserEmail)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(new ApiResponse("You can only delete your own posts", null));
+            }
+
             postService.deletePost(postId);
             return ResponseEntity.ok(new ApiResponse("Post deleted successfully", null));
         } catch (Exception e) {

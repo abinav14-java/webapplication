@@ -2,6 +2,25 @@
 
 A fully-featured Instagram-like social media platform built with Spring Boot and Vanilla JavaScript. Share photos, like posts, comment, follow friends, and much more!
 
+> **📋 New to the project?** See [`INDEX.md`](INDEX.md) for a complete navigation guide!
+
+## 📖 Quick Navigation
+
+**First time?** Start here: [`docs/QUICK_START.md`](docs/QUICK_START.md) (5 minutes)
+
+**Documentation:**
+- [`docs/QUICK_START.md`](docs/QUICK_START.md) - Setup and run in 5 minutes
+- [`docs/FEATURES.md`](docs/FEATURES.md) - All 15+ features explained
+- [`docs/PROJECT_STRUCTURE.md`](docs/PROJECT_STRUCTURE.md) - Code organization
+- [`docs/INTERVIEW_GUIDE.md`](docs/INTERVIEW_GUIDE.md) - Technical deep dive (20 questions)
+- [`docs/IMPLEMENTATION_SUMMARY.md`](docs/IMPLEMENTATION_SUMMARY.md) - Architecture details
+- [`docs/DEPLOYMENT_GUIDE.md`](docs/DEPLOYMENT_GUIDE.md) - Deployment options (Docker/JAR/WAR)
+
+**Scripts:**
+- `scripts/run.sh` - Start application (Linux/Mac)
+- `scripts/setup.sh` - Initial setup (Linux/Mac)
+- `scripts/setup.bat` - Initial setup (Windows)
+
 ## 🚀 Tech Stack
 
 ### Backend

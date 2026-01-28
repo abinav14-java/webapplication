@@ -88,8 +88,6 @@ public class PostServiceImpl implements PostService {
             throws Exception {
 
         Post post = getPostById(postId);
-        Users currentUser = userRepository.findByEmail(currentUserEmail)
-                .orElseThrow(() -> new Exception("User not found"));
 
         Users author = post.getUser();
 
@@ -103,6 +101,22 @@ public class PostServiceImpl implements PostService {
         dto.setCreatedAt(post.getCreatedAt());
         dto.setLikeCount(likeRepository.countByPost(post));
         dto.setCommentCount(commentRepository.countByPost(post));
+
+        // If no user is logged in, return default values
+        if (currentUserEmail == null) {
+            dto.setLikedByCurrentUser(false);
+            dto.setFollowingAuthor(false);
+            return dto;
+        }
+
+        Users currentUser = userRepository.findByEmail(currentUserEmail)
+                .orElse(null);
+
+        if (currentUser == null) {
+            dto.setLikedByCurrentUser(false);
+            dto.setFollowingAuthor(false);
+            return dto;
+        }
 
         // liked
         dto.setLikedByCurrentUser(
@@ -156,8 +170,14 @@ public class PostServiceImpl implements PostService {
             List<Post> posts,
             String currentUserEmail) throws Exception {
 
-        Users currentUser = userRepository.findByEmail(currentUserEmail)
-                .orElseThrow(() -> new Exception("User not found"));
+        // Allow null currentUserEmail - just return posts with default liked/following
+        // state
+        Users currentUser = null;
+        if (currentUserEmail != null) {
+            currentUser = userRepository.findByEmail(currentUserEmail).orElse(null);
+        }
+
+        final Users finalCurrentUser = currentUser;
 
         return posts.stream().map(post -> {
 
@@ -174,14 +194,20 @@ public class PostServiceImpl implements PostService {
             dto.setLikeCount(likeRepository.countByPost(post));
             dto.setCommentCount(commentRepository.countByPost(post));
 
-            // liked
-            dto.setLikedByCurrentUser(
-                    likeRepository.existsByUserAndPost(currentUser, post));
+            // If no current user, default to not liked and not following
+            if (finalCurrentUser == null) {
+                dto.setLikedByCurrentUser(false);
+                dto.setFollowingAuthor(false);
+            } else {
+                // liked
+                dto.setLikedByCurrentUser(
+                        likeRepository.existsByUserAndPost(finalCurrentUser, post));
 
-            // 🔥 FOLLOW STATE (KEY FIX)
-            dto.setFollowingAuthor(
-                    followRepository.existsByFollowerAndFollowing(
-                            currentUser, author));
+                // 🔥 FOLLOW STATE (KEY FIX)
+                dto.setFollowingAuthor(
+                        followRepository.existsByFollowerAndFollowing(
+                                finalCurrentUser, author));
+            }
 
             return dto;
 
