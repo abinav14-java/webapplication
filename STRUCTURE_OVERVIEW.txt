@@ -28,7 +28,6 @@
 │  │   ├── FEATURES.md                   15+ features explained                │
 │  │   ├── PROJECT_STRUCTURE.md          Code organization                    │
 │  │   ├── IMPLEMENTATION_SUMMARY.md     Architecture details                 │
-│  │   ├── INTERVIEW_GUIDE.md            20 interview questions + answers     │
 │  │   └── DEPLOYMENT_GUIDE.md           Deployment instructions              │
 │  │                                                                            │
 │  ├── 📁 scripts/                       ← Startup Scripts (Cross-platform)    │
