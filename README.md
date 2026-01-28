@@ -227,28 +227,8 @@ id, post_id, user_id, created_at
 id, follower_id, following_id, created_at
 ```
 
-## 🎨 Design System
-
-### Colors
-- **Primary**: `#667eea` to `#764ba2` (Purple gradient)
-- **Accent**: `#E1306C` (Instagram pink)
-- **Background**: Light gray (`#f5f7fa`) or dark (`#1a1a2e`)
-- **Success**: `#27ae60` (Green)
-- **Error**: `#e74c3c` (Red)
-
-### Typography
-- **Font**: System fonts (Arial, Helvetica, sans-serif)
-- **Headings**: Bold (600-800 weight)
-- **Body**: Regular (400 weight)
-
-### Components
-- **Cards**: 16px border-radius, shadow `0 8px 24px rgba(0,0,0,0.08)`
-- **Buttons**: 20px border-radius, gradient backgrounds
-- **Inputs**: 8px border-radius, light borders
-- **Avatars**: 48px circular with 2px border
 
 ## 🚀 Deployment
-
 ### Using Docker
 ```bash
 docker build -t instaclo .
@@ -269,20 +249,6 @@ JWT_SECRET=your_secret_key
 JWT_EXPIRATION=86400000
 ```
 
-## 🐛 Troubleshooting
-
-### Issue: Post won't load
-**Solution**: Check network tab in browser console, verify API is running
-
-### Issue: Images not showing
-**Solution**: Ensure image URLs are valid, check CORS settings
-
-### Issue: Search not working
-**Solution**: Verify posts have captions, try different keywords
-
-### Issue: Dark mode not saving
-**Solution**: Clear localStorage, check browser cache
-
 ## 🔄 Development
 
 ### Running in Development Mode
@@ -300,11 +266,6 @@ mvn clean package -P war
 mvn test
 ```
 
-### Code Coverage
-```bash
-mvn jacoco:report
-```
-
 ## 📈 Performance Optimization
 
 - **Image Lazy Loading** - Images load on-demand
@@ -318,46 +279,10 @@ mvn jacoco:report
 - [Spring Boot Documentation](https://spring.io/projects/spring-boot)
 - [JWT Authentication](https://jwt.io/)
 - [REST API Best Practices](https://restfulapi.net/)
-- [MDN Web Docs](https://developer.mozilla.org/)
-
-## 📄 License
-
-This project is licensed under the MIT License - see LICENSE file for details.
-
-## 👥 Contributing
-
-Contributions are welcome! Please follow these steps:
-1. Fork the repository
-2. Create a feature branch
-3. Commit your changes
-4. Push to the branch
-5. Submit a pull request
-
-## 📞 Support
-
-For issues or questions, please:
-1. Check the FEATURES.md for feature documentation
-2. Check the QUICKSTART.md for usage guide
-3. Review browser console for errors
-4. Contact the development team
-
-## 🎉 Future Enhancements
-
-- [ ] Nested comment replies
-- [ ] Image filters and effects
-- [ ] Direct messaging
-- [ ] Stories (24-hour posts)
-- [ ] Trending hashtags
-- [ ] Video support
-- [ ] Push notifications
-- [ ] User recommendations
-- [ ] Analytics dashboard
-- [ ] Content moderation
 
 ---
-
-**Version**: 1.0.0  
 **Last Updated**: January 2026  
-**Built with ❤️**
+
+
 
 
