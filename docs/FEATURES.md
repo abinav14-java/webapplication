@@ -253,30 +253,6 @@
 
 ---
 
-## 🐛 Known Limitations
-
-- Comments don't support nested replies (planned)
-- Image filters not yet implemented
-- Direct messaging not included
-- Story feature not implemented
-
----
-
-## 🔄 Future Enhancements
-
-1. Nested comment replies
-2. Image filters and effects
-3. Direct messaging
-4. Stories (24-hour posts)
-5. Trending hashtags
-6. User discovery/recommendations
-7. Push notifications
-8. Video support
-9. Post sharing
-10. Report/block functionality
-
----
-
 ## 🧪 Testing
 
 All features have been tested for:
@@ -286,11 +262,6 @@ All features have been tested for:
 - ✅ Performance
 - ✅ Cross-browser compatibility
 - ✅ Dark mode appearance
-- ✅ Mobile responsiveness
 
 ---
-
-## 📞 Support
-
-For issues or feature requests, contact the development team.
 

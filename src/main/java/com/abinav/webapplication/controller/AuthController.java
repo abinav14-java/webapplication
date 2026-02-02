@@ -52,8 +52,8 @@ public class AuthController {
             return ResponseEntity.ok(
                     new LoginResponse(
                             token,
-                            user.getId(), // ✅ SEND userId
-                            user.getUsername() // ✅ SEND username
+                            user.getId(), //  SEND userId
+                            user.getUsername() //  SEND username
                     ));
 
         } catch (Exception e) {
