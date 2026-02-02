@@ -3,8 +3,6 @@ package com.abinav.webapplication.controller;
 import java.util.Collections;
 import java.util.Map;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,6 +20,8 @@ import com.abinav.webapplication.logic.UserLogic;
 import com.abinav.webapplication.model.LoginResponse;
 import com.abinav.webapplication.model.Users;
 import com.abinav.webapplication.utility.JwtUtil;
+import com.abinav.webapplication.exception.ResourceNotFoundException;
+import com.abinav.webapplication.exception.ValidationException;
 import org.springframework.security.core.Authentication;
 
 @RestController
@@ -30,36 +30,34 @@ public class UserController {
 
 	@Autowired
 	private UserLogic userLogic;
-	
+
 	@Autowired
 	private JwtUtil jwtUtil;
 
 	@Autowired
 	private BCryptPasswordEncoder passwordEncoder;
 
-	private static final Logger logger = LoggerFactory.getLogger(FollowController.class);
-
 	@PostMapping
 	@ResponseStatus(code = HttpStatus.CREATED)
 	public ResponseEntity<LoginResponse> createUser(@RequestBody Users user) {
-		try {
-			
-		
+		if (user.getEmail() == null || user.getEmail().trim().isEmpty()) {
+			throw new ValidationException("Email is required");
+		}
+		if (user.getPassword() == null || user.getPassword().trim().isEmpty()) {
+			throw new ValidationException("Password is required");
+		}
+
 		user.setPassword(passwordEncoder.encode(user.getPassword()));
-		
 		Users savedUser = userLogic.createUser(user);
 		String token = jwtUtil.generateToken(savedUser.getEmail());
-//		return userLogic.createUser(user);
-		
-		return ResponseEntity.ok(new LoginResponse(token));
-	}catch (Exception e) {
-		logger.error("Error creating user: {}", e.getMessage());
-		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-		}
+		return ResponseEntity.status(HttpStatus.CREATED).body(new LoginResponse(token));
 	}
 
 	@GetMapping("/check-email")
-	public ResponseEntity<Map<String, Boolean>> checkEmail(@RequestParam String email) throws Exception {
+	public ResponseEntity<Map<String, Boolean>> checkEmail(@RequestParam String email) {
+		if (email == null || email.trim().isEmpty()) {
+			throw new ValidationException("Email is required");
+		}
 		boolean exists = userLogic.existsByEmail(email);
 		return ResponseEntity.ok(Collections.singletonMap("exists", exists));
 	}
@@ -69,12 +67,16 @@ public class UserController {
 	 * PUT /api/users/profile/photo
 	 */
 	@PutMapping("/profile/photo")
-	public ResponseEntity<?> updateProfilePhoto(@RequestBody Map<String, String> body, Authentication auth) throws Exception {
+	public ResponseEntity<?> updateProfilePhoto(@RequestBody Map<String, String> body, Authentication auth) {
 		String imageUrl = body.get("imageUrl");
-		if (imageUrl == null) return ResponseEntity.badRequest().body(Collections.singletonMap("message", "imageUrl required"));
+		if (imageUrl == null || imageUrl.trim().isEmpty()) {
+			throw new ValidationException("imageUrl is required");
+		}
+
 		String email = auth.getName();
-		Users user = userLogic.findByEmail(email).orElse(null);
-		if (user == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Collections.singletonMap("message", "User not found"));
+		Users user = userLogic.findByEmail(email)
+				.orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
 		user.setProfilePhotoUrl(imageUrl);
 		userLogic.updateUser(user);
 		return ResponseEntity.ok(Collections.singletonMap("message", "Profile photo updated"));
@@ -85,7 +87,11 @@ public class UserController {
 	 * GET /api/users/search?query=...
 	 */
 	@GetMapping("/search")
-	public ResponseEntity<?> searchUsers(@RequestParam String query) throws Exception {
+	public ResponseEntity<?> searchUsers(@RequestParam String query) {
+		if (query == null || query.trim().isEmpty()) {
+			throw new ValidationException("Search query cannot be empty");
+		}
+
 		java.util.List<Users> results = userLogic.searchUsers(query);
 		java.util.List<com.abinav.webapplication.dto.UserDTO> dtos = new java.util.ArrayList<>();
 		for (Users u : results) {

@@ -1,5 +1,7 @@
 package com.abinav.webapplication.controller;
 
+import com.abinav.webapplication.exception.AuthenticationException;
+import com.abinav.webapplication.exception.ResourceNotFoundException;
 import com.abinav.webapplication.model.Follow;
 import com.abinav.webapplication.model.Users;
 import com.abinav.webapplication.serviceImpl.FollowServiceImpl;
@@ -41,57 +43,41 @@ public class FollowController {
     @PostMapping("/{userId}/follow")
     public ResponseEntity<?> followUser(
             @PathVariable Long userId,
-            Authentication auth) {
+            Authentication auth) throws Exception {
 
-        try {
-            // 🔐 Authentication check
-            if (auth == null || !auth.isAuthenticated()
-                    || "anonymousUser".equals(auth.getPrincipal())) {
-                logger.warn("Unauthenticated follow attempt to userId: {}", userId);
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body("You must be logged in to follow a user");
-            }
-
-            String email = auth.getName();
-            Users currentUser = userService.findByEmail(email)
-                    .orElse(null);
-
-            if (currentUser == null) {
-                logger.warn("Authenticated user not found in database: {}", email);
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body("User not found");
-            }
-
-            // 🚫 Self-follow protection
-            if (currentUser.getId().equals(userId)) {
-                logger.warn("User {} is trying to follow themselves", email);
-                return ResponseEntity.badRequest()
-                        .body("Cannot follow yourself");
-            }
-
-            Follow follow = followService
-                    .followUser(currentUser.getId(), userId);
-
-            Map<String, Object> response = new HashMap<>();
-            response.put("following", true);
-
-            // ✅ IMPORTANT: follow can be NULL (already following)
-            if (follow == null) {
-                response.put("message", "Already following");
-                return ResponseEntity.ok(response);
-            }
-
-            response.put("message", "User followed successfully");
-            response.put("follower", UserMapper.toDTO(follow.getFollower()));
-            response.put("following_user", UserMapper.toDTO(follow.getFollowing()));
-
-            return ResponseEntity.status(HttpStatus.CREATED).body(response);
-
-        } catch (Exception e) {
-            logger.error("Error while following user", e);
-            return ResponseEntity.badRequest()
-                    .body("Error: " + e.getMessage());
+        // 🔐 Authentication check
+        if (auth == null || !auth.isAuthenticated()
+                || "anonymousUser".equals(auth.getPrincipal())) {
+            logger.warn("Unauthenticated follow attempt to userId: {}", userId);
+            throw new AuthenticationException("You must be logged in to follow a user");
         }
+
+        String email = auth.getName();
+        Users currentUser = userService.findByEmail(email)
+                .orElseThrow(() -> new AuthenticationException("User not found"));
+
+        // 🚫 Self-follow protection
+        if (currentUser.getId().equals(userId)) {
+            logger.warn("User {} is trying to follow themselves", email);
+            throw new IllegalArgumentException("Cannot follow yourself");
+        }
+
+        Follow follow = followService.followUser(currentUser.getId(), userId);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("following", true);
+
+        // ✅ IMPORTANT: follow can be NULL (already following)
+        if (follow == null) {
+            response.put("message", "Already following");
+            return ResponseEntity.ok(response);
+        }
+
+        response.put("message", "User followed successfully");
+        response.put("follower", UserMapper.toDTO(follow.getFollower()));
+        response.put("following_user", UserMapper.toDTO(follow.getFollowing()));
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     /*
@@ -104,36 +90,23 @@ public class FollowController {
     @DeleteMapping("/{userId}/unfollow")
     public ResponseEntity<?> unfollowUser(
             @PathVariable Long userId,
-            Authentication auth) {
+            Authentication auth) throws Exception {
 
-        try {
-            if (auth == null || !auth.isAuthenticated()
-                    || "anonymousUser".equals(auth.getPrincipal())) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body("You must be logged in");
-            }
-
-            String email = auth.getName();
-            Users currentUser = userService.findByEmail(email)
-                    .orElse(null);
-
-            if (currentUser == null) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body("User not found");
-            }
-
-            // ✅ Idempotent unfollow
-            followService.unfollowUser(currentUser.getId(), userId);
-
-            return ResponseEntity.ok(
-                    Map.of("following", false,
-                            "message", "Unfollowed successfully"));
-
-        } catch (Exception e) {
-            logger.error("Error while unfollowing user", e);
-            return ResponseEntity.badRequest()
-                    .body("Error: " + e.getMessage());
+        if (auth == null || !auth.isAuthenticated()
+                || "anonymousUser".equals(auth.getPrincipal())) {
+            throw new AuthenticationException("You must be logged in");
         }
+
+        String email = auth.getName();
+        Users currentUser = userService.findByEmail(email)
+                .orElseThrow(() -> new AuthenticationException("User not found"));
+
+        // ✅ Idempotent unfollow
+        followService.unfollowUser(currentUser.getId(), userId);
+
+        return ResponseEntity.ok(
+                Map.of("following", false,
+                        "message", "Unfollowed successfully"));
     }
 
     /*
@@ -146,34 +119,21 @@ public class FollowController {
     @GetMapping("/{userId}/is-following")
     public ResponseEntity<?> isFollowing(
             @PathVariable Long userId,
-            Authentication auth) {
+            Authentication auth) throws Exception {
 
-        try {
-            if (auth == null || !auth.isAuthenticated()
-                    || "anonymousUser".equals(auth.getPrincipal())) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body("You must be logged in");
-            }
-
-            String email = auth.getName();
-            Users currentUser = userService.findByEmail(email)
-                    .orElse(null);
-
-            if (currentUser == null) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body("User not found");
-            }
-
-            boolean isFollowing = followService.isFollowing(currentUser.getId(), userId);
-
-            return ResponseEntity.ok(
-                    Map.of("following", isFollowing));
-
-        } catch (Exception e) {
-            logger.error("Error while checking follow status", e);
-            return ResponseEntity.badRequest()
-                    .body("Error: " + e.getMessage());
+        if (auth == null || !auth.isAuthenticated()
+                || "anonymousUser".equals(auth.getPrincipal())) {
+            throw new AuthenticationException("You must be logged in");
         }
+
+        String email = auth.getName();
+        Users currentUser = userService.findByEmail(email)
+                .orElseThrow(() -> new AuthenticationException("User not found"));
+
+        boolean isFollowing = followService.isFollowing(currentUser.getId(), userId);
+
+        return ResponseEntity.ok(
+                Map.of("following", isFollowing));
     }
 
     /*
@@ -183,33 +143,21 @@ public class FollowController {
      */
 
     @GetMapping("/{userId}/followers")
-    public ResponseEntity<?> getFollowers(@PathVariable Long userId) {
-        try {
-            List<Follow> followers = followService.getFollowers(userId);
-            return ResponseEntity.ok(
-                    Map.of(
-                            "count", followers.size(),
-                            "followers", UserMapper.followersToDTOs(followers)));
-        } catch (Exception e) {
-            logger.error("Error while getting followers", e);
-            return ResponseEntity.badRequest()
-                    .body("Error: " + e.getMessage());
-        }
+    public ResponseEntity<?> getFollowers(@PathVariable Long userId) throws Exception {
+        List<Follow> followers = followService.getFollowers(userId);
+        return ResponseEntity.ok(
+                Map.of(
+                        "count", followers.size(),
+                        "followers", UserMapper.followersToDTOs(followers)));
     }
 
     @GetMapping("/{userId}/following")
-    public ResponseEntity<?> getFollowing(@PathVariable Long userId) {
-        try {
-            List<Follow> following = followService.getFollowing(userId);
-            return ResponseEntity.ok(
-                    Map.of(
-                            "count", following.size(),
-                            "following", UserMapper.followingToDTOs(following)));
-        } catch (Exception e) {
-            logger.error("Error while getting following", e);
-            return ResponseEntity.badRequest()
-                    .body("Error: " + e.getMessage());
-        }
+    public ResponseEntity<?> getFollowing(@PathVariable Long userId) throws Exception {
+        List<Follow> following = followService.getFollowing(userId);
+        return ResponseEntity.ok(
+                Map.of(
+                        "count", following.size(),
+                        "following", UserMapper.followingToDTOs(following)));
     }
 
     /*
@@ -219,27 +167,15 @@ public class FollowController {
      */
 
     @GetMapping("/{userId}/followers/count")
-    public ResponseEntity<?> getFollowersCount(@PathVariable Long userId) {
-        try {
-            long count = followService.getFollowersCount(userId);
-            return ResponseEntity.ok(Map.of("count", count));
-        } catch (Exception e) {
-            logger.error("Error while getting followers count", e);
-            return ResponseEntity.badRequest()
-                    .body("Error: " + e.getMessage());
-        }
+    public ResponseEntity<?> getFollowersCount(@PathVariable Long userId) throws Exception {
+        long count = followService.getFollowersCount(userId);
+        return ResponseEntity.ok(Map.of("count", count));
     }
 
     @GetMapping("/{userId}/following/count")
-    public ResponseEntity<?> getFollowingCount(@PathVariable Long userId) {
-        try {
-            long count = followService.getFollowingCount(userId);
-            return ResponseEntity.ok(Map.of("count", count));
-        } catch (Exception e) {
-            logger.error("Error while getting following count", e);
-            return ResponseEntity.badRequest()
-                    .body("Error: " + e.getMessage());
-        }
+    public ResponseEntity<?> getFollowingCount(@PathVariable Long userId) throws Exception {
+        long count = followService.getFollowingCount(userId);
+        return ResponseEntity.ok(Map.of("count", count));
     }
 
     /*
@@ -249,26 +185,17 @@ public class FollowController {
      */
 
     @GetMapping("/{userId}/profile")
-    public ResponseEntity<?> getUserProfile(@PathVariable Long userId) {
-        try {
-            Users user = userService.findById(userId).orElse(null);
-            if (user == null) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body("User not found");
-            }
+    public ResponseEntity<?> getUserProfile(@PathVariable Long userId) throws Exception {
+        Users user = userService.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-            long followersCount = followService.getFollowersCount(userId);
-            long followingCount = followService.getFollowingCount(userId);
+        long followersCount = followService.getFollowersCount(userId);
+        long followingCount = followService.getFollowingCount(userId);
 
-            return ResponseEntity.ok(
-                    Map.of(
-                            "user", UserMapper.toDTO(user),
-                            "followers_count", followersCount,
-                            "following_count", followingCount));
-        } catch (Exception e) {
-            logger.error("Error while getting user profile", e);
-            return ResponseEntity.badRequest()
-                    .body("Error: " + e.getMessage());
-        }
+        return ResponseEntity.ok(
+                Map.of(
+                        "user", UserMapper.toDTO(user),
+                        "followers_count", followersCount,
+                        "following_count", followingCount));
     }
 }

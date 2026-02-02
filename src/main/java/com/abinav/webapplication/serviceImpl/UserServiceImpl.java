@@ -19,13 +19,13 @@ public class UserServiceImpl implements UserService {
 	private UserRepository userRepository;
 
 	@Override
-	public Users createUser(Users user) throws Exception {
+	public Users createUser(Users user) {
 
 		return userRepository.save(user);
 	}
 
 	@Override
-	public boolean existsByEmail(String email) throws Exception {
+	public boolean existsByEmail(String email) {
 		return userRepository.existsByEmail(email);
 	}
 
@@ -38,7 +38,7 @@ public class UserServiceImpl implements UserService {
 				new ArrayList<>());
 	}
 
-	public Optional<Users> findByEmail(String email) throws Exception {
+	public Optional<Users> findByEmail(String email) {
 		return userRepository.findByEmail(email);
 	}
 
@@ -46,11 +46,11 @@ public class UserServiceImpl implements UserService {
 		return userRepository.findById(id);
 	}
 
-	public Users updateUser(Users user) throws Exception {
+	public Users updateUser(Users user) {
 		return userRepository.save(user);
 	}
 
-	public java.util.List<Users> searchUsers(String query) throws Exception {
+	public java.util.List<Users> searchUsers(String query) {
 		return userRepository.findByUsernameContainingIgnoreCaseOrEmailContainingIgnoreCase(query, query);
 	}
 

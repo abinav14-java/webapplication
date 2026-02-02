@@ -15,6 +15,8 @@ import com.abinav.webapplication.repository.LikeRepository;
 import com.abinav.webapplication.repository.PostRepository;
 import com.abinav.webapplication.repository.UserRepository;
 import com.abinav.webapplication.service.PostService;
+import com.abinav.webapplication.exception.ResourceNotFoundException;
+import com.abinav.webapplication.exception.ValidationException;
 
 @Service
 public class PostServiceImpl implements PostService {
@@ -42,17 +44,17 @@ public class PostServiceImpl implements PostService {
      */
 
     @Override
-    public Post createPost(Post post) throws Exception {
+    public Post createPost(Post post) {
         if (post.getUser() == null) {
-            throw new Exception("User information is required");
+            throw new ValidationException("User information is required");
         }
         return postRepository.save(post);
     }
 
     @Override
-    public Post updatePost(Long postId, Post updatedPost) throws Exception {
+    public Post updatePost(Long postId, Post updatedPost) {
         Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new Exception("Post not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Post not found"));
 
         if (updatedPost.getCaption() != null) {
             post.setCaption(updatedPost.getCaption());
@@ -65,16 +67,16 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public void deletePost(Long postId) throws Exception {
+    public void deletePost(Long postId) {
         Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new Exception("Post not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Post not found"));
         postRepository.delete(post);
     }
 
     @Override
-    public Post getPostById(Long postId) throws Exception {
+    public Post getPostById(Long postId) {
         return postRepository.findById(postId)
-                .orElseThrow(() -> new Exception("Post not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Post not found"));
     }
 
     /*
@@ -84,8 +86,7 @@ public class PostServiceImpl implements PostService {
      */
 
     @Override
-    public PostDTO getPostDTOById(Long postId, String currentUserEmail)
-            throws Exception {
+    public PostDTO getPostDTOById(Long postId, String currentUserEmail) {
 
         Post post = getPostById(postId);
 
@@ -136,9 +137,9 @@ public class PostServiceImpl implements PostService {
      */
 
     @Override
-    public List<PostDTO> getUserPosts(String email) throws Exception {
+    public List<PostDTO> getUserPosts(String email) {
         Users user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new Exception("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         List<Post> posts = postRepository.findByUserOrderByCreatedAtDesc(user);
 
@@ -152,8 +153,7 @@ public class PostServiceImpl implements PostService {
      */
 
     @Override
-    public List<PostDTO> getAllPosts(String currentUserEmail)
-            throws Exception {
+    public List<PostDTO> getAllPosts(String currentUserEmail) {
 
         List<Post> posts = postRepository.findAllByOrderByCreatedAtDesc();
 
@@ -168,7 +168,7 @@ public class PostServiceImpl implements PostService {
 
     private List<PostDTO> convertToDTO(
             List<Post> posts,
-            String currentUserEmail) throws Exception {
+            String currentUserEmail) {
 
         // Allow null currentUserEmail - just return posts with default liked/following
         // state

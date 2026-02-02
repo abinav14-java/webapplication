@@ -5,18 +5,18 @@ import com.abinav.webapplication.model.Post;
 import com.abinav.webapplication.dto.PostDTO;
 
 public interface PostService {
-    Post createPost(Post post) throws Exception;
+    Post createPost(Post post);
 
-    Post updatePost(Long postId, Post post) throws Exception;
+    Post updatePost(Long postId, Post post);
 
-    void deletePost(Long postId) throws Exception;
+    void deletePost(Long postId);
 
-    Post getPostById(Long postId) throws Exception;
+    Post getPostById(Long postId);
 
     // Return DTO for single post (sanitized)
-    PostDTO getPostDTOById(Long postId, String currentUserEmail) throws Exception;
+    PostDTO getPostDTOById(Long postId, String currentUserEmail);
 
-    List<PostDTO> getUserPosts(String email) throws Exception;
+    List<PostDTO> getUserPosts(String email);
 
-    List<PostDTO> getAllPosts(String currentUserEmail) throws Exception;
+    List<PostDTO> getAllPosts(String currentUserEmail);
 }

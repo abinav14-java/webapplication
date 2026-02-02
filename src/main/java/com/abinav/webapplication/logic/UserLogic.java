@@ -14,11 +14,11 @@ public class UserLogic implements UserDetailsService {
 	@Autowired
 	private UserService userService;
 
-	public Users createUser(Users user) throws Exception {
+	public Users createUser(Users user) {
 		return userService.createUser(user);
 	}
 
-	public boolean existsByEmail(String email) throws Exception {
+	public boolean existsByEmail(String email) {
 		return userService.existsByEmail(email);
 	}
 
@@ -30,15 +30,15 @@ public class UserLogic implements UserDetailsService {
 		}
 	}
 
-	public java.util.Optional<Users> findByEmail(String email) throws Exception {
+	public java.util.Optional<Users> findByEmail(String email) {
 		return userService.findByEmail(email);
 	}
 
-	public Users updateUser(Users user) throws Exception {
+	public Users updateUser(Users user) {
 		return userService.updateUser(user);
 	}
 
-	public java.util.List<Users> searchUsers(String query) throws Exception {
+	public java.util.List<Users> searchUsers(String query) {
 		return userService.searchUsers(query);
 	}
 

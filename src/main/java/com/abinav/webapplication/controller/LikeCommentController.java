@@ -8,6 +8,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import com.abinav.webapplication.exception.AuthenticationException;
+import com.abinav.webapplication.exception.ValidationException;
 import com.abinav.webapplication.model.Comment;
 import com.abinav.webapplication.model.Like;
 import com.abinav.webapplication.model.Users;
@@ -42,28 +44,20 @@ public class LikeCommentController {
      * POST /api/posts/{postId}/like
      */
     @PostMapping("/{postId}/like")
-    public ResponseEntity<?> likePost(@PathVariable Long postId, Authentication auth) {
-        try {
-            String email = auth.getName();
-            Users user = userService.findByEmail(email).orElse(null);
-            if (user == null) {
-                logger.warn("Authenticated user not found in database: {}", email);
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not found");
-            }
+    public ResponseEntity<?> likePost(@PathVariable Long postId, Authentication auth) throws Exception {
+        String email = auth.getName();
+        Users user = userService.findByEmail(email)
+                .orElseThrow(() -> new AuthenticationException("User not found"));
 
-            Like like = likeService.likePost(postId, user.getId());
-            java.util.Map<String, Object> response = new java.util.HashMap<>();
-            response.put("message", "Post liked successfully");
-            java.util.Map<String, Object> likeMap = new java.util.HashMap<>();
-            likeMap.put("id", like.getId());
-            likeMap.put("createdAt", like.getCreatedAt() != null ? like.getCreatedAt().toString() : null);
-            likeMap.put("user", UserMapper.toDTO(like.getUser()));
-            response.put("like", likeMap);
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            logger.error("Error while liking post: ", e);
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error: " + e.getMessage());
-        }
+        Like like = likeService.likePost(postId, user.getId());
+        java.util.Map<String, Object> response = new java.util.HashMap<>();
+        response.put("message", "Post liked successfully");
+        java.util.Map<String, Object> likeMap = new java.util.HashMap<>();
+        likeMap.put("id", like.getId());
+        likeMap.put("createdAt", like.getCreatedAt() != null ? like.getCreatedAt().toString() : null);
+        likeMap.put("user", UserMapper.toDTO(like.getUser()));
+        response.put("like", likeMap);
+        return ResponseEntity.ok(response);
     }
 
     /**
@@ -71,23 +65,15 @@ public class LikeCommentController {
      * DELETE /api/posts/{postId}/unlike
      */
     @DeleteMapping("/{postId}/unlike")
-    public ResponseEntity<?> unlikePost(@PathVariable Long postId, Authentication auth) {
-        try {
-            String email = auth.getName();
-            Users user = userService.findByEmail(email).orElse(null);
-            if (user == null) {
-                logger.warn("Authenticated user not found in database: {}", email);
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not found");
-            }
+    public ResponseEntity<?> unlikePost(@PathVariable Long postId, Authentication auth) throws Exception {
+        String email = auth.getName();
+        Users user = userService.findByEmail(email)
+                .orElseThrow(() -> new AuthenticationException("User not found"));
 
-            likeService.unlikePost(postId, user.getId());
-            Map<String, String> response = new HashMap<>();
-            response.put("message", "Post unliked successfully");
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            logger.error("Error while unliking post: ", e);
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error: " + e.getMessage());
-        }
+        likeService.unlikePost(postId, user.getId());
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "Post unliked successfully");
+        return ResponseEntity.ok(response);
     }
 
     /**
@@ -95,15 +81,11 @@ public class LikeCommentController {
      * GET /api/posts/{postId}/likes/count
      */
     @GetMapping("/{postId}/likes/count")
-    public ResponseEntity<?> getLikesCount(@PathVariable Long postId) {
-        try {
-            long count = likeService.getLikesCount(postId);
-            Map<String, Long> response = new HashMap<>();
-            response.put("count", count);
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error: " + e.getMessage());
-        }
+    public ResponseEntity<?> getLikesCount(@PathVariable Long postId) throws Exception {
+        long count = likeService.getLikesCount(postId);
+        Map<String, Long> response = new HashMap<>();
+        response.put("count", count);
+        return ResponseEntity.ok(response);
     }
 
     /**
@@ -111,16 +93,12 @@ public class LikeCommentController {
      * GET /api/posts/{postId}/likes
      */
     @GetMapping("/{postId}/likes")
-    public ResponseEntity<?> getPostLikes(@PathVariable Long postId) {
-        try {
-            List<Like> likes = likeService.getPostLikes(postId);
-            java.util.Map<String, Object> response = new java.util.HashMap<>();
-            response.put("count", likes.size());
-            response.put("likes", UserMapper.likesToDTOs(likes));
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error: " + e.getMessage());
-        }
+    public ResponseEntity<?> getPostLikes(@PathVariable Long postId) throws Exception {
+        List<Like> likes = likeService.getPostLikes(postId);
+        java.util.Map<String, Object> response = new java.util.HashMap<>();
+        response.put("count", likes.size());
+        response.put("likes", UserMapper.likesToDTOs(likes));
+        return ResponseEntity.ok(response);
     }
 
     /**
@@ -128,21 +106,15 @@ public class LikeCommentController {
      * GET /api/posts/{postId}/liked-by-user
      */
     @GetMapping("/{postId}/liked-by-user")
-    public ResponseEntity<?> isLikedByUser(@PathVariable Long postId, Authentication auth) {
-        try {
-            String email = auth.getName();
-            Users user = userService.findByEmail(email).orElse(null);
-            if (user == null) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not found");
-            }
+    public ResponseEntity<?> isLikedByUser(@PathVariable Long postId, Authentication auth) throws Exception {
+        String email = auth.getName();
+        Users user = userService.findByEmail(email)
+                .orElseThrow(() -> new AuthenticationException("User not found"));
 
-            boolean isLiked = likeService.isLikedByUser(postId, user.getId());
-            Map<String, Boolean> response = new HashMap<>();
-            response.put("liked", isLiked);
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error: " + e.getMessage());
-        }
+        boolean isLiked = likeService.isLikedByUser(postId, user.getId());
+        Map<String, Boolean> response = new HashMap<>();
+        response.put("liked", isLiked);
+        return ResponseEntity.ok(response);
     }
 
     // ========== COMMENTS ==========
@@ -153,29 +125,23 @@ public class LikeCommentController {
      */
     @PostMapping("/{postId}/comments")
     public ResponseEntity<?> addComment(@PathVariable Long postId, @RequestBody Map<String, String> request,
-                                        Authentication auth) {
-        try {
-            String text = request.get("text");
-            if (text == null || text.trim().isEmpty()) {
-                return ResponseEntity.badRequest().body("Comment text is required");
-            }
-
-            String email = auth.getName();
-            Users user = userService.findByEmail(email).orElse(null);
-            if (user == null) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not found");
-            }
-
-            Comment comment = commentService.addComment(postId, user.getId(), text);
-            java.util.Map<String, Object> response = new java.util.HashMap<>();
-            response.put("message", "Comment added successfully");
-            // sanitized comment map
-            Object cm = UserMapper.commentsToMaps(java.util.Arrays.asList(comment)).get(0);
-            response.put("comment", cm);
-            return ResponseEntity.status(HttpStatus.CREATED).body(response);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error: " + e.getMessage());
+            Authentication auth) throws Exception {
+        String text = request.get("text");
+        if (text == null || text.trim().isEmpty()) {
+            throw new ValidationException("Comment text is required");
         }
+
+        String email = auth.getName();
+        Users user = userService.findByEmail(email)
+                .orElseThrow(() -> new AuthenticationException("User not found"));
+
+        Comment comment = commentService.addComment(postId, user.getId(), text);
+        java.util.Map<String, Object> response = new java.util.HashMap<>();
+        response.put("message", "Comment added successfully");
+        // sanitized comment map
+        Object cm = UserMapper.commentsToMaps(java.util.Arrays.asList(comment)).get(0);
+        response.put("comment", cm);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     /**
@@ -184,21 +150,15 @@ public class LikeCommentController {
      */
     @DeleteMapping("/{postId}/comments/{commentId}")
     public ResponseEntity<?> deleteComment(@PathVariable Long postId, @PathVariable Long commentId,
-                                           Authentication auth) {
-        try {
-            String email = auth.getName();
-            Users user = userService.findByEmail(email).orElse(null);
-            if (user == null) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not found");
-            }
+            Authentication auth) throws Exception {
+        String email = auth.getName();
+        Users user = userService.findByEmail(email)
+                .orElseThrow(() -> new AuthenticationException("User not found"));
 
-            commentService.deleteComment(commentId, user.getId());
-            java.util.Map<String, String> response = new java.util.HashMap<>();
-            response.put("message", "Comment deleted successfully");
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error: " + e.getMessage());
-        }
+        commentService.deleteComment(commentId, user.getId());
+        java.util.Map<String, String> response = new java.util.HashMap<>();
+        response.put("message", "Comment deleted successfully");
+        return ResponseEntity.ok(response);
     }
 
     /**
@@ -206,16 +166,12 @@ public class LikeCommentController {
      * GET /api/posts/{postId}/comments
      */
     @GetMapping("/{postId}/comments")
-    public ResponseEntity<?> getPostComments(@PathVariable Long postId) {
-        try {
-            List<Comment> comments = commentService.getCommentsList(postId);
-            java.util.Map<String, Object> response = new java.util.HashMap<>();
-            response.put("count", comments.size());
-            response.put("comments", UserMapper.commentsToMaps(comments));
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error: " + e.getMessage());
-        }
+    public ResponseEntity<?> getPostComments(@PathVariable Long postId) throws Exception {
+        List<Comment> comments = commentService.getCommentsList(postId);
+        java.util.Map<String, Object> response = new java.util.HashMap<>();
+        response.put("count", comments.size());
+        response.put("comments", UserMapper.commentsToMaps(comments));
+        return ResponseEntity.ok(response);
     }
 
     /**
@@ -224,27 +180,21 @@ public class LikeCommentController {
      */
     @PutMapping("/{postId}/comments/{commentId}")
     public ResponseEntity<?> updateComment(@PathVariable Long postId, @PathVariable Long commentId,
-                                          @RequestBody Map<String, String> request, Authentication auth) {
-        try {
-            String text = request.get("text");
-            if (text == null || text.trim().isEmpty()) {
-                return ResponseEntity.badRequest().body("Comment text is required");
-            }
-
-            String email = auth.getName();
-            Users user = userService.findByEmail(email).orElse(null);
-            if (user == null) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not found");
-            }
-
-            Comment comment = commentService.updateComment(commentId, user.getId(), text);
-            java.util.Map<String, Object> response = new java.util.HashMap<>();
-            response.put("message", "Comment updated successfully");
-            Object cm = UserMapper.commentsToMaps(java.util.Arrays.asList(comment)).get(0);
-            response.put("comment", cm);
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error: " + e.getMessage());
+            @RequestBody Map<String, String> request, Authentication auth) throws Exception {
+        String text = request.get("text");
+        if (text == null || text.trim().isEmpty()) {
+            throw new ValidationException("Comment text is required");
         }
+
+        String email = auth.getName();
+        Users user = userService.findByEmail(email)
+                .orElseThrow(() -> new AuthenticationException("User not found"));
+
+        Comment comment = commentService.updateComment(commentId, user.getId(), text);
+        java.util.Map<String, Object> response = new java.util.HashMap<>();
+        response.put("message", "Comment updated successfully");
+        Object cm = UserMapper.commentsToMaps(java.util.Arrays.asList(comment)).get(0);
+        response.put("comment", cm);
+        return ResponseEntity.ok(response);
     }
 }

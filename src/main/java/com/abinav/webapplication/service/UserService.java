@@ -6,18 +6,18 @@ import com.abinav.webapplication.model.Users;
 
 public interface UserService {
 
-	Users createUser(Users user) throws Exception;
+	Users createUser(Users user);
 
-	boolean existsByEmail(String email) throws Exception;
+	boolean existsByEmail(String email);
 
 	UserDetails loadUserByUsername(String email) throws Exception;
 
-	java.util.Optional<Users> findByEmail(String email) throws Exception;
+	java.util.Optional<Users> findByEmail(String email);
 
 	java.util.Optional<Users> findById(Long id);
 
-	Users updateUser(Users user) throws Exception;
+	Users updateUser(Users user);
 
-	java.util.List<Users> searchUsers(String query) throws Exception;
+	java.util.List<Users> searchUsers(String query);
 
 }
