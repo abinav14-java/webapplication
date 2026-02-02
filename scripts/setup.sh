@@ -48,15 +48,33 @@ fi
 
 # Check MySQL
 echo -e "${YELLOW}Checking MySQL connection...${NC}"
-if mysql -u root -proot -e "SELECT 1" &> /dev/null; then
+
+# Load environment variables if available
+if [ -f "../config/.env" ]; then
+    set -a
+    source ../config/.env
+    set +a
+fi
+
+# Use environment variables or defaults for MySQL
+DB_USER=${DB_USERNAME:-root}
+DB_PASS=${DB_PASSWORD:-}
+
+if [ -z "$DB_PASS" ]; then
+    echo -e "${YELLOW}⚠ DB_PASSWORD not set in config/.env${NC}"
+    read -sp "Enter MySQL root password (leave blank if none): " DB_PASS
+    echo ""
+fi
+
+if mysql -u "$DB_USER" -p"$DB_PASS" -e "SELECT 1" &> /dev/null; then
     echo -e "${GREEN}✓ MySQL is running${NC}"
     
     # Create database if not exists
     echo -e "${YELLOW}Setting up database...${NC}"
-    mysql -u root -proot -e "CREATE DATABASE IF NOT EXISTS instaclo;" 2>/dev/null
-    mysql -u root -proot -e "CREATE USER IF NOT EXISTS 'instauser'@'localhost' IDENTIFIED BY 'password123';" 2>/dev/null
-    mysql -u root -proot -e "GRANT ALL PRIVILEGES ON instaclo.* TO 'instauser'@'localhost';" 2>/dev/null
-    mysql -u root -proot -e "FLUSH PRIVILEGES;" 2>/dev/null
+    mysql -u "$DB_USER" -p"$DB_PASS" -e "CREATE DATABASE IF NOT EXISTS instaclo;" 2>/dev/null
+    mysql -u "$DB_USER" -p"$DB_PASS" -e "CREATE USER IF NOT EXISTS 'instauser'@'localhost' IDENTIFIED BY 'instauser_password';" 2>/dev/null
+    mysql -u "$DB_USER" -p"$DB_PASS" -e "GRANT ALL PRIVILEGES ON instaclo.* TO 'instauser'@'localhost';" 2>/dev/null
+    mysql -u "$DB_USER" -p"$DB_PASS" -e "FLUSH PRIVILEGES;" 2>/dev/null
     echo -e "${GREEN}✓ Database configured${NC}"
 else
     echo -e "${YELLOW}⚠ MySQL not running or wrong credentials${NC}"
