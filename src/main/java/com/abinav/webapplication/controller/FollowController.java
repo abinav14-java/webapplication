@@ -2,6 +2,7 @@ package com.abinav.webapplication.controller;
 
 import com.abinav.webapplication.exception.AuthenticationException;
 import com.abinav.webapplication.exception.ResourceNotFoundException;
+import com.abinav.webapplication.exception.ValidationException;
 import com.abinav.webapplication.model.Follow;
 import com.abinav.webapplication.model.Users;
 import com.abinav.webapplication.serviceImpl.FollowServiceImpl;
@@ -45,7 +46,7 @@ public class FollowController {
             @PathVariable Long userId,
             Authentication auth) throws Exception {
 
-        // 🔐 Authentication check
+        // Authentication check
         if (auth == null || !auth.isAuthenticated()
                 || "anonymousUser".equals(auth.getPrincipal())) {
             logger.warn("Unauthenticated follow attempt to userId: {}", userId);
@@ -56,10 +57,10 @@ public class FollowController {
         Users currentUser = userService.findByEmail(email)
                 .orElseThrow(() -> new AuthenticationException("User not found"));
 
-        // 🚫 Self-follow protection
+        // Self-follow protection
         if (currentUser.getId().equals(userId)) {
             logger.warn("User {} is trying to follow themselves", email);
-            throw new IllegalArgumentException("Cannot follow yourself");
+            throw new ValidationException("Cannot follow yourself");
         }
 
         Follow follow = followService.followUser(currentUser.getId(), userId);
@@ -67,7 +68,7 @@ public class FollowController {
         Map<String, Object> response = new HashMap<>();
         response.put("following", true);
 
-        // ✅ IMPORTANT: follow can be NULL (already following)
+        // IMPORTANT: follow can be NULL (already following)
         if (follow == null) {
             response.put("message", "Already following");
             return ResponseEntity.ok(response);

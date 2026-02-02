@@ -1,7 +1,6 @@
 package com.abinav.webapplication.serviceImpl;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,7 +60,7 @@ public class FollowServiceImpl implements FollowService {
                                 .orElseThrow(() -> new Exception("User to unfollow not found"));
 
                 followRepository.findByFollowerAndFollowing(follower, following)
-                                .ifPresent(followRepository::delete); // ✅ IDEMPOTENT
+                                .ifPresent(followRepository::delete); // IDEMPOTENT
         }
 
         @Override
@@ -133,7 +132,7 @@ public class FollowServiceImpl implements FollowService {
                 boolean alreadyFollowing = followRepository.existsByFollowerAndFollowing(follower, following);
 
                 if (alreadyFollowing) {
-                        return null; // ✅ IDEMPOTENT
+                        return null; //  IDEMPOTENT
                 }
 
                 Follow follow = new Follow();
@@ -150,7 +149,7 @@ public class FollowServiceImpl implements FollowService {
                                 .orElseThrow(() -> new Exception("User to unfollow not found"));
 
                 followRepository.findByFollowerAndFollowing(follower, following)
-                                .ifPresent(followRepository::delete); // ✅ IDEMPOTENT
+                                .ifPresent(followRepository::delete); // IDEMPOTENT
         }
 
         public boolean isFollowing(Long followerId, Long followingId) throws Exception {

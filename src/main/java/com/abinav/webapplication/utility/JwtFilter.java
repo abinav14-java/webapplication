@@ -32,9 +32,9 @@ public class JwtFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
 
         String path = request.getRequestURI();
-        String method = request.getMethod();
+        // String method = request.getMethod();
 
-        // 🔓 Public endpoints ONLY - no JWT needed
+        // Public endpoints ONLY - no JWT needed
         if (path.startsWith("/api/auth") ||
                 path.equals("/login") ||
                 path.equals("/register") ||
@@ -44,7 +44,7 @@ public class JwtFilter extends OncePerRequestFilter {
             return;
         }
 
-        // 🔐 Check for JWT token and validate it (required for POST/PUT/DELETE,
+        // Check for JWT token and validate it (required for POST/PUT/DELETE,
         // optional for GET)
         String authHeader = request.getHeader("Authorization");
 

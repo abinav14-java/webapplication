@@ -37,6 +37,7 @@ public class AuthController {
         @PostMapping("/login")
         public ResponseEntity<?> login(@RequestBody LoginRequest request) {
                 try {
+                        @SuppressWarnings("unused")
                         Authentication auth = authenticationManager.authenticate(
                                         new UsernamePasswordAuthenticationToken(
                                                         request.getEmail(),
