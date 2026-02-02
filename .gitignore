@@ -10,6 +10,11 @@ target/
 .env.*.local
 application-prod.properties
 application-local.properties
+project_credentials.txt
+project_credentials
+*.credentials
+*.secret
+secrets/
 
 ### STS ###
 .apt_generated
