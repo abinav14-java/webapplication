@@ -41,6 +41,8 @@ build/
 
 # Log files
 *.log
+*.log.*
+*.gz
 logs/
 log/
 
