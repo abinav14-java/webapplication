@@ -3,7 +3,12 @@ target/
 .mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
-
+COMMANDS.md
+DATABASE_API_TESTING.md
+DEVELOPER_GUIDES_INDEX.md
+DEVELOPER_GUIDES_INDEX.md
+PROJECT_QUICK_COMMANDS.md
+VSCODE_GUIDE.md
 ### Environment Variables & Secrets ###
 .env
 .env.local
